@@ -27,8 +27,6 @@ source install/setup
 ros2 launch pupil_neon_pkg pupil_devel.launch.py
 ```
 
-
-
 Alternatively, run the associated as a docker container with the provided Dockerfile
 
 ```
@@ -44,6 +42,14 @@ export containerId=$(docker ps -l -q)
 
 Multiple parameters can be configured at: ```config/params.yaml```
 
+
+# TODO
+
+- [ ] Benchmark code. Move to non-blocking calls of the API
+- [x] Development mode / emulator
+- [x] Parameters
+- [ ] Camera calibration
+ 
 
 <!--
 # Citation

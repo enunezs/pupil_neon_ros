@@ -1,6 +1,6 @@
 xhost +local:root
 
-docker image build -t ros2-glass-base .     
+docker image build -t ros2_pupil_neon .     
 
 docker run -it --env="DISPLAY" \
 	--device=/dev/video0:/dev/video0 \
@@ -12,7 +12,7 @@ docker run -it --env="DISPLAY" \
 	--net=host \
 	-v $(pwd):/root/ws/ros2_pupil_neon \
 	-v /dev/shm:/dev/shm \
-	ros2-glass-base
+	ros2_pupil_neon
 
 export containerId=$(docker ps -l -q)
 

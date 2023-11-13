@@ -1,5 +1,5 @@
 #FROM ros:$ROS_DISTRO-ros-base	
-ARG ROS_DISTRO=foxy # humble 
+ARG ROS_DISTRO=humble 
 FROM ros:$ROS_DISTRO-ros-base	
 LABEL maintainer="Emanuel Nunez S gmail dot com"
 ENV HOME /root
@@ -34,12 +34,9 @@ RUN apt-get update && apt-get install -y \
     python3-pip \
     unzip
 
+# ------
 
-#pip3 install --no-cache-dir pyautogui 
 RUN pip3 install --upgrade pip
-#RUN pip3 install -U \
-#  	argcomplete \
-#	pyautogui
 
 # Pupil Neon glasses
 RUN pip3 install pupil-labs-realtime-api
@@ -47,15 +44,14 @@ RUN pip3 install pupil-labs-realtime-api
 # Glasses emulation (Via Mouse)
 RUN pip3 install python-xlib pyautogui
 
+# Other
 RUN apt-get update && apt-get install -y \
 	scrot \
 	python3-tk\
-	python3-dev
-#python-dev
-
-RUN apt-get update && apt-get install -y \
-    ros-$ROS_DISTRO-tf-transformations
-    #libopencv-dev #python3-opencv
+	python3-dev \
+	ros-$ROS_DISTRO-tf-transformations
+    	#libopencv-dev 
+    	#python3-opencv
 
 
 #### SET ENVIRONMENT

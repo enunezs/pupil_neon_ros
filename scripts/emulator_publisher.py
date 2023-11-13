@@ -151,16 +151,28 @@ class emulatorPublisher(Node):
         img_msg.header.stamp = self.get_clock().now().to_msg() # TODO: Change to glasses, align with pts?
         img_msg.header.frame_id = "pupil_glasses_frame"
 
-        # * Publish image
-        self.publisher_front_camera.publish(img_msg)  # Publish the message
+        # * Pack camera info into message
+        camera_info_msg = CameraInfo()
+        camera_info_msg.header.stamp = self.get_clock().now().to_msg()
+        camera_info_msg.header.frame_id = "pupil_glasses_frame"
+        camera_info_msg.height = video_resolution[1]
+        camera_info_msg.width = video_resolution[0]
+        camera_info_msg.distortion_model = "plumb_bob"
+        camera_info_msg.d = [0.10538655, -0.45207925,  0.00821108, -0.01366533,  0.5338796 ]
+        camera_info_msg.k = [1.10354357e+03, 0.00000000e+00, 9.21639123e+02,
+                        0.00000000e+00, 1.16283535e+03, 7.00397423e+02,
+                        0.00000000e+00, 0.00000000e+00, 1.00000000e+00] 
+        #camera_info_msg.P = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, video_resolution[0]/2, video_resolution[1]/2, 1.0]
+        camera_info_msg.binning_x = 4
+        camera_info_msg.binning_y = 4
+        
 
-        # * Publish gaze position
-        # make a string message with the gaze point data and publish it
+
+
+        # * Publish the message
+        self.publisher_front_camera.publish(img_msg)
         self.publisher_gaze_position.publish(gaze_msg)
-
-        #self.publisher_gaze_position.publish()  # Publish the message
-
-
+        self.publisher_camera_info.publish(camera_info_msg)
 
         # * Calculate time difference between iterations and frame rate
         end_time = self.get_clock().now() 
