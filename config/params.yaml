@@ -1,0 +1,10 @@
+/glasses_emulator_node:
+  ros__parameters:
+    camera_depth: 1.0
+    camera_id: 2
+    draw_circle: false
+    publish_freq: 100
+    use_sim_time: false
+    video_resolution:
+      - 1920
+      - 20
