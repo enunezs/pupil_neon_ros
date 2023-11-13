@@ -6,14 +6,10 @@
 
 
 # Pending
-# Make sure it compiles!
 # Benchmark -> test max refresh rate
-# Development mode
 # change to wired connection (buy adaptor)
 # Camera calibration -> aruco?
-# repo
 # gif w video
-# expose properties for customization -> good exercise
 #self.declare_parameter("Name",name)
 #self.get_parameter("Name").get_parameter_value()
 
@@ -56,7 +52,8 @@ from pupil_labs.realtime_api.simple import Device
 video_resolution = (1920,1080)    # (full HD) Default for low framerate
 publish_freq = 100  # Hz Can be 33Hz, 100Hz or 200Hz
 greyscale = False
-
+ip = "192.168.1.110"
+port="8080"
 ### * DEBUG * ###
 draw_circle = True
 print_performance = False
@@ -74,12 +71,35 @@ class pupilPublisher(Node):
         self.publisher_camera_info = self.create_publisher(CameraInfo, "pupil_glasses/front_camera/camera_info", 1 )
         #self.publisher_glasses = self.create_publisher(PupilGlassesMsg, "pupil_glasses", 1)
 
+        self.declare_parameter( 'camera_id', 0 )
+        self.declare_parameter( 'publish_freq', 100 )
+        #self.declare_parameter( 'print_performance', False )
+        self.declare_parameter( 'draw_circle', True )
+        self.declare_parameter( 'camera_depth', 1.00 )
+        self.declare_parameter( 'video_resolution', (1920,1080)  )
+        self.declare_parameter( 'ip', "192.168.1.110")
+        self.declare_parameter( 'port', "8080")
+
+        global syncronize_data
+        global publish_freq
+        global greyscale
+        global draw_circle
+        global camera_depth
+        global video_resolution
+
+        publish_freq = self.get_parameter('publish_freq').get_parameter_value().integer_value
+        #print_performance = self.get_parameter('print_performance').get_parameter_value().bool_value
+        draw_circle = self.get_parameter('draw_circle').get_parameter_value().bool_value
+        camera_depth = self.get_parameter('camera_depth').get_parameter_value().double_value
+        video_resolution = tuple(self.get_parameter('video_resolution').get_parameter_value().integer_array_value)
+        ip = self.get_parameter('ip').get_parameter_value().string_value
+        port = self.get_parameter('port').get_parameter_value().string_value
+
         # Connect to glasses
         print("Connecting to Pupil Glasses...")
         device = discover_one_device()
 
-        ip = "192.168.1.110"
-        port="8080"
+
         device = Device(address=ip, port=port)
 
         print(f"Phone IP address: {device.phone_ip}")

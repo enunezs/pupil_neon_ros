@@ -1,22 +1,33 @@
-# ros2_tobii_glasses2
+# ros2_pupil_neon
 
-Tobii Glasses 2 interfacing for ROS2.
+Simple Pupil Neon interfacing for ROS2.
 
-Provides and publishes a `tobii_glasses` message with the Glasses information, as well as optional `tobii_glasses/camera` and `tobii_glasses/gaze_position`for just those variables.
+Provides and publishes messages with the [Pupil Neon Glasses](https://pupil-labs.com/products/neon) basic API elements: `pupil_glasses/front_camera` and `pupil_glasses/gaze_position`.
 
-The script has many customizable variables to configure resolution, frequency, syncing mode and more
+The script has customizable variables to configure resolution, frequency and other variables, as well as using a webcam for emulation
 
-Using the amazing library [Tobiiglassespysuite](https://github.com/ddetommaso/TobiiGlassesPySuite).
+Using the Pupil Labs Realtime API [pupil-labs-realtime-api
+](https://pupil-labs-realtime-api.readthedocs.io/en/stable/api/index.html).
 
 # Usage
 
-To use, clone the repository to your workspace, connect to the Toii Glasses through wifi and run:
+To use, clone the repository to your workspace, connect on the same wifi network as the Pupil Glasses (or share connection on the phone and connect) and run:
 
 ```
 colcon build
 source install/setup
-ros2 run tobii_glasses_pkg tobii_glasses.py
+ros2 launch pupil_neon_pkg pupil.launch.py
 ```
+
+A node to emulate glasses behaviour using a webcame and mouse (useful for development!) can be instantiated with:
+
+```
+colcon build
+source install/setup
+ros2 launch pupil_neon_pkg pupil_devel.launch.py
+```
+
+
 
 Alternatively, run the associated as a docker container with the provided Dockerfile
 
@@ -31,27 +42,15 @@ export containerId=$(docker ps -l -q)
 
 ```
 
+Multiple parameters can be configured at: ```config/params.yaml```
+
+
 <!--
 # Citation
 
 '''
 @inproceedings{Nunez:2022,
- author = {Emanuel Nunez Sardinha, Virginia Ruiz Garate},
- title = {TobiiGlassesPySuite: An Open-source Suite for Using the Tobii Pro Glasses 2 in Eye-tracking Studies},
- booktitle = {Proceedings of the 11th ACM Symposium on Eye Tracking Research \& Applications},
- series = {ETRA '19},
- year = {2019},
- isbn = {978-1-4503-6709-7},
- location = {Denver, Colorado},
- pages = {46:1--46:5},
- articleno = {46},
- numpages = {5},
- url = {http://doi.acm.org/10.1145/3314111.3319828},
- doi = {10.1145/3314111.3319828},
- acmid = {3319828},
- publisher = {ACM},
- address = {New York, NY, USA},
- keywords = {Tobii Pro Glasses 2, eye-tracking, human-computer interaction, open-source, wearable computing, wearable eye-tracker},
+Pennding
 }
 '''
 -->

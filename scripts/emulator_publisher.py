@@ -54,13 +54,12 @@ class emulatorPublisher(Node):
         self.publisher_gaze_position = self.create_publisher(PointStamped, "pupil_glasses/gaze_position", 1 ) 
         self.publisher_camera_info = self.create_publisher(CameraInfo, "pupil_glasses/front_camera/camera_info", 1 )
 
-        #self.declare_parameter('devel_mode', True)
         self.declare_parameter( 'camera_id', 0 )
         self.declare_parameter( 'publish_freq', 100 )
         #self.declare_parameter( 'print_performance', False )
         self.declare_parameter( 'draw_circle', True )
         self.declare_parameter( 'camera_depth', 1.00 )
-        self.declare_parameter( 'video_resolution', None )
+        self.declare_parameter( 'video_resolution', (1920,1080)  )
 
         global syncronize_data
         global publish_freq
@@ -103,10 +102,6 @@ class emulatorPublisher(Node):
         #self.publisher_marker = self.create_publisher(MarkerArray, "pupil_glasses/visualization_marker", 2)        
         #marker_pub = rospy.Publisher("/visualization_marker", Marker, queue_size = 2)
 
-        """
-        if syncronize_data:
-            self.buffer = TobiiGlassesBuffer()
-        """
 
         #self.last_ts = 0
         # * Create publisher
