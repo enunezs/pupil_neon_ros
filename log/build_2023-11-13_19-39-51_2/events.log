@@ -1,0 +1,128 @@
+[0.000000] (-) TimerEvent: {}
+[0.000266] (pupil_neon_pkg) JobQueued: {'identifier': 'pupil_neon_pkg', 'dependencies': OrderedDict()}
+[0.000312] (pupil_neon_pkg) JobStarted: {'identifier': 'pupil_neon_pkg'}
+[0.036443] (pupil_neon_pkg) JobProgress: {'identifier': 'pupil_neon_pkg', 'progress': 'cmake'}
+[0.037022] (pupil_neon_pkg) JobProgress: {'identifier': 'pupil_neon_pkg', 'progress': 'build'}
+[0.037536] (pupil_neon_pkg) Command: {'cmd': ['/usr/bin/cmake', '--build', '/root/ws/ros2_pupil_neon/build/pupil_neon_pkg', '--', '-j12', '-l12'], 'cwd': '/root/ws/ros2_pupil_neon/build/pupil_neon_pkg', 'env': OrderedDict([('HOSTNAME', 'franka-pc'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib'), ('HOME', '/root'), ('ROS_PYTHON_VERSION', '3'), ('ROS_DISTRO', 'humble'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('TERM', 'xterm'), ('ROS_LOCALHOST_ONLY', '0'), ('QT_X11_NO_MITSHM', '1'), ('PATH', '/opt/ros/humble/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'), ('DISPLAY', ':0'), ('LANG', 'C.UTF-8'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('ROS_DOMAIN_ID', '7'), ('AMENT_PREFIX_PATH', '/opt/ros/humble'), ('PWD', '/root/ws/ros2_pupil_neon/build/pupil_neon_pkg'), ('LC_ALL', 'C.UTF-8'), ('PYTHONPATH', '/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages'), ('COLCON', '1'), ('CMAKE_PREFIX_PATH', '/opt/ros/humble')]), 'shell': False}
+[0.099628] (-) TimerEvent: {}
+[0.200236] (-) TimerEvent: {}
+[0.253378] (pupil_neon_pkg) StdoutLine: {'line': b'-- The C compiler identification is GNU 11.4.0\n'}
+[0.300306] (-) TimerEvent: {}
+[0.347822] (pupil_neon_pkg) StdoutLine: {'line': b'-- The CXX compiler identification is GNU 11.4.0\n'}
+[0.355863] (pupil_neon_pkg) StdoutLine: {'line': b'-- Detecting C compiler ABI info\n'}
+[0.364430] (pupil_neon_pkg) StdoutLine: {'line': b'-- Detecting C compiler ABI info - failed\n'}
+[0.364643] (pupil_neon_pkg) StdoutLine: {'line': b'-- Check for working C compiler: /usr/bin/cc\n'}
+[0.400423] (-) TimerEvent: {}
+[0.416905] (pupil_neon_pkg) StdoutLine: {'line': b'-- Check for working C compiler: /usr/bin/cc - works\n'}
+[0.417375] (pupil_neon_pkg) StdoutLine: {'line': b'-- Detecting C compile features\n'}
+[0.418033] (pupil_neon_pkg) StdoutLine: {'line': b'-- Detecting C compile features - done\n'}
+[0.421307] (pupil_neon_pkg) StdoutLine: {'line': b'-- Detecting CXX compiler ABI info\n'}
+[0.487161] (pupil_neon_pkg) StdoutLine: {'line': b'-- Detecting CXX compiler ABI info - done\n'}
+[0.493703] (pupil_neon_pkg) StdoutLine: {'line': b'-- Check for working CXX compiler: /usr/bin/c++ - skipped\n'}
+[0.493967] (pupil_neon_pkg) StdoutLine: {'line': b'-- Detecting CXX compile features\n'}
+[0.494404] (pupil_neon_pkg) StdoutLine: {'line': b'-- Detecting CXX compile features - done\n'}
+[0.500488] (-) TimerEvent: {}
+[0.500676] (pupil_neon_pkg) StdoutLine: {'line': b'-- Found ament_cmake: 1.3.5 (/opt/ros/humble/share/ament_cmake/cmake)\n'}
+[0.600608] (-) TimerEvent: {}
+[0.637518] (pupil_neon_pkg) StdoutLine: {'line': b'-- Found Python3: /usr/bin/python3.10 (found version "3.10.12") found components: Interpreter \n'}
+[0.700710] (-) TimerEvent: {}
+[0.718964] (pupil_neon_pkg) StdoutLine: {'line': b'-- Found rclpy: 3.3.10 (/opt/ros/humble/share/rclpy/cmake)\n'}
+[0.720345] (pupil_neon_pkg) StdoutLine: {'line': b'-- Found std_msgs: 4.2.3 (/opt/ros/humble/share/std_msgs/cmake)\n'}
+[0.759128] (pupil_neon_pkg) StdoutLine: {'line': b'-- Found rosidl_generator_c: 3.1.5 (/opt/ros/humble/share/rosidl_generator_c/cmake)\n'}
+[0.764626] (pupil_neon_pkg) StdoutLine: {'line': b'-- Found rosidl_adapter: 3.1.5 (/opt/ros/humble/share/rosidl_adapter/cmake)\n'}
+[0.774520] (pupil_neon_pkg) StdoutLine: {'line': b'-- Found rosidl_generator_cpp: 3.1.5 (/opt/ros/humble/share/rosidl_generator_cpp/cmake)\n'}
+[0.790806] (pupil_neon_pkg) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c\n'}
+[0.800804] (-) TimerEvent: {}
+[0.811734] (pupil_neon_pkg) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp\n'}
+[0.871883] (pupil_neon_pkg) StdoutLine: {'line': b'-- Found sensor_msgs: 4.2.3 (/opt/ros/humble/share/sensor_msgs/cmake)\n'}
+[0.900939] (-) TimerEvent: {}
+[0.994943] (pupil_neon_pkg) StdoutLine: {'line': b'-- Found cv_bridge: 3.2.1 (/opt/ros/humble/share/cv_bridge/cmake)\n'}
+[1.001037] (-) TimerEvent: {}
+[1.008481] (pupil_neon_pkg) StdoutLine: {'line': b'-- Found rosidl_default_generators: 1.2.0 (/opt/ros/humble/share/rosidl_default_generators/cmake)\n'}
+[1.067987] (pupil_neon_pkg) StdoutLine: {'line': b'-- Found ament_lint_auto: 0.12.8 (/opt/ros/humble/share/ament_lint_auto/cmake)\n'}
+[1.101139] (-) TimerEvent: {}
+[1.129725] (pupil_neon_pkg) StdoutLine: {'line': b"-- Added test 'copyright' to check source files copyright and LICENSE\n"}
+[1.178267] (pupil_neon_pkg) StdoutLine: {'line': b"-- Added test 'cppcheck' to perform static code analysis on C / C++ code\n"}
+[1.178470] (pupil_neon_pkg) StdoutLine: {'line': b'-- Configured cppcheck include dirs: \n'}
+[1.178551] (pupil_neon_pkg) StdoutLine: {'line': b'-- Configured cppcheck exclude dirs and/or files: \n'}
+[1.201261] (-) TimerEvent: {}
+[1.227690] (pupil_neon_pkg) StdoutLine: {'line': b"-- Added test 'cpplint' to check C / C++ code against the Google style\n"}
+[1.227842] (pupil_neon_pkg) StdoutLine: {'line': b'-- Configured cpplint exclude dirs and/or files: \n'}
+[1.234593] (pupil_neon_pkg) StdoutLine: {'line': b"-- Added test 'flake8' to check Python code syntax and style conventions\n"}
+[1.246788] (pupil_neon_pkg) StdoutLine: {'line': b"-- Added test 'lint_cmake' to check CMake code style\n"}
+[1.253231] (pupil_neon_pkg) StdoutLine: {'line': b"-- Added test 'pep257' to check Python code against some of the docstring style conventions in PEP 257\n"}
+[1.301371] (-) TimerEvent: {}
+[1.303903] (pupil_neon_pkg) StdoutLine: {'line': b"-- Added test 'uncrustify' to check C / C++ code style\n"}
+[1.304030] (pupil_neon_pkg) StdoutLine: {'line': b'-- Configured uncrustify additional arguments: \n'}
+[1.310546] (pupil_neon_pkg) StdoutLine: {'line': b"-- Added test 'xmllint' to check XML markup files\n"}
+[1.311369] (pupil_neon_pkg) StdoutLine: {'line': b'-- Configuring done\n'}
+[1.318312] (pupil_neon_pkg) StdoutLine: {'line': b'-- Generating done\n'}
+[1.320530] (pupil_neon_pkg) StdoutLine: {'line': b'-- Build files have been written to: /root/ws/ros2_pupil_neon/build/pupil_neon_pkg\n'}
+[1.335305] (pupil_neon_pkg) StdoutLine: {'line': b"make[1]: Entering directory '/root/ws/ros2_pupil_neon/build/pupil_neon_pkg'\n"}
+[1.336224] (pupil_neon_pkg) StdoutLine: {'line': b"make[2]: Entering directory '/root/ws/ros2_pupil_neon/build/pupil_neon_pkg'\n"}
+[1.342553] (pupil_neon_pkg) StdoutLine: {'line': b"make[2]: Leaving directory '/root/ws/ros2_pupil_neon/build/pupil_neon_pkg'\n"}
+[1.343470] (pupil_neon_pkg) StdoutLine: {'line': b"make[2]: Entering directory '/root/ws/ros2_pupil_neon/build/pupil_neon_pkg'\n"}
+[1.349205] (pupil_neon_pkg) StdoutLine: {'line': b"make[2]: Leaving directory '/root/ws/ros2_pupil_neon/build/pupil_neon_pkg'\n"}
+[1.354675] (pupil_neon_pkg) StdoutLine: {'line': b'Built target ament_cmake_python_copy_pupil_neon_pkg\n'}
+[1.356604] (pupil_neon_pkg) StdoutLine: {'line': b"make[2]: Entering directory '/root/ws/ros2_pupil_neon/build/pupil_neon_pkg'\n"}
+[1.363582] (pupil_neon_pkg) StdoutLine: {'line': b"make[2]: Leaving directory '/root/ws/ros2_pupil_neon/build/pupil_neon_pkg'\n"}
+[1.364787] (pupil_neon_pkg) StdoutLine: {'line': b"make[2]: Entering directory '/root/ws/ros2_pupil_neon/build/pupil_neon_pkg'\n"}
+[1.401486] (-) TimerEvent: {}
+[1.501711] (-) TimerEvent: {}
+[1.515161] (pupil_neon_pkg) StdoutLine: {'line': b'running egg_info\n'}
+[1.515682] (pupil_neon_pkg) StdoutLine: {'line': b'creating pupil_neon_pkg.egg-info\n'}
+[1.515824] (pupil_neon_pkg) StdoutLine: {'line': b'writing pupil_neon_pkg.egg-info/PKG-INFO\n'}
+[1.515917] (pupil_neon_pkg) StdoutLine: {'line': b'writing dependency_links to pupil_neon_pkg.egg-info/dependency_links.txt\n'}
+[1.515991] (pupil_neon_pkg) StdoutLine: {'line': b'writing top-level names to pupil_neon_pkg.egg-info/top_level.txt\n'}
+[1.516226] (pupil_neon_pkg) StdoutLine: {'line': b"writing manifest file 'pupil_neon_pkg.egg-info/SOURCES.txt'\n"}
+[1.517635] (pupil_neon_pkg) StdoutLine: {'line': b"reading manifest file 'pupil_neon_pkg.egg-info/SOURCES.txt'\n"}
+[1.518028] (pupil_neon_pkg) StdoutLine: {'line': b"writing manifest file 'pupil_neon_pkg.egg-info/SOURCES.txt'\n"}
+[1.531215] (pupil_neon_pkg) StdoutLine: {'line': b"make[2]: Leaving directory '/root/ws/ros2_pupil_neon/build/pupil_neon_pkg'\n"}
+[1.536995] (pupil_neon_pkg) StdoutLine: {'line': b'Built target ament_cmake_python_build_pupil_neon_pkg_egg\n'}
+[1.537885] (pupil_neon_pkg) StdoutLine: {'line': b"make[1]: Leaving directory '/root/ws/ros2_pupil_neon/build/pupil_neon_pkg'\n"}
+[1.545520] (pupil_neon_pkg) CommandEnded: {'returncode': 0}
+[1.562018] (pupil_neon_pkg) JobProgress: {'identifier': 'pupil_neon_pkg', 'progress': 'install'}
+[1.568875] (pupil_neon_pkg) Command: {'cmd': ['/usr/bin/cmake', '--install', '/root/ws/ros2_pupil_neon/build/pupil_neon_pkg'], 'cwd': '/root/ws/ros2_pupil_neon/build/pupil_neon_pkg', 'env': OrderedDict([('HOSTNAME', 'franka-pc'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib'), ('HOME', '/root'), ('ROS_PYTHON_VERSION', '3'), ('ROS_DISTRO', 'humble'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('TERM', 'xterm'), ('ROS_LOCALHOST_ONLY', '0'), ('QT_X11_NO_MITSHM', '1'), ('PATH', '/opt/ros/humble/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'), ('DISPLAY', ':0'), ('LANG', 'C.UTF-8'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('ROS_DOMAIN_ID', '7'), ('AMENT_PREFIX_PATH', '/opt/ros/humble'), ('PWD', '/root/ws/ros2_pupil_neon/build/pupil_neon_pkg'), ('LC_ALL', 'C.UTF-8'), ('PYTHONPATH', '/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages'), ('COLCON', '1'), ('CMAKE_PREFIX_PATH', '/opt/ros/humble')]), 'shell': False}
+[1.573789] (pupil_neon_pkg) StdoutLine: {'line': b'-- Install configuration: ""\n'}
+[1.573973] (pupil_neon_pkg) StdoutLine: {'line': b'-- Up-to-date: /root/ws/ros2_pupil_neon/install/pupil_neon_pkg/share/pupil_neon_pkg//launch\n'}
+[1.574132] (pupil_neon_pkg) StdoutLine: {'line': b'-- Up-to-date: /root/ws/ros2_pupil_neon/install/pupil_neon_pkg/share/pupil_neon_pkg//launch/ros2_pupil_emulator.launch.py\n'}
+[1.574279] (pupil_neon_pkg) StdoutLine: {'line': b'-- Up-to-date: /root/ws/ros2_pupil_neon/install/pupil_neon_pkg/share/pupil_neon_pkg//launch/ros2_pupil.launch.py\n'}
+[1.574395] (pupil_neon_pkg) StdoutLine: {'line': b'-- Up-to-date: /root/ws/ros2_pupil_neon/install/pupil_neon_pkg/share/pupil_neon_pkg/config\n'}
+[1.574462] (pupil_neon_pkg) StdoutLine: {'line': b'-- Up-to-date: /root/ws/ros2_pupil_neon/install/pupil_neon_pkg/share/pupil_neon_pkg/config/params.yaml\n'}
+[1.574542] (pupil_neon_pkg) StdoutLine: {'line': b'-- Up-to-date: /root/ws/ros2_pupil_neon/install/pupil_neon_pkg/share/pupil_neon_pkg/environment/pythonpath.sh\n'}
+[1.574624] (pupil_neon_pkg) StdoutLine: {'line': b'-- Installing: /root/ws/ros2_pupil_neon/install/pupil_neon_pkg/share/pupil_neon_pkg/environment/pythonpath.dsv\n'}
+[1.574680] (pupil_neon_pkg) StdoutLine: {'line': b'-- Installing: /root/ws/ros2_pupil_neon/install/pupil_neon_pkg/lib/python3.8/site-packages/pupil_neon_pkg-1.0.0-py3.10.egg-info\n'}
+[1.574735] (pupil_neon_pkg) StdoutLine: {'line': b'-- Installing: /root/ws/ros2_pupil_neon/install/pupil_neon_pkg/lib/python3.8/site-packages/pupil_neon_pkg-1.0.0-py3.10.egg-info/top_level.txt\n'}
+[1.574789] (pupil_neon_pkg) StdoutLine: {'line': b'-- Installing: /root/ws/ros2_pupil_neon/install/pupil_neon_pkg/lib/python3.8/site-packages/pupil_neon_pkg-1.0.0-py3.10.egg-info/SOURCES.txt\n'}
+[1.574842] (pupil_neon_pkg) StdoutLine: {'line': b'-- Installing: /root/ws/ros2_pupil_neon/install/pupil_neon_pkg/lib/python3.8/site-packages/pupil_neon_pkg-1.0.0-py3.10.egg-info/dependency_links.txt\n'}
+[1.574894] (pupil_neon_pkg) StdoutLine: {'line': b'-- Installing: /root/ws/ros2_pupil_neon/install/pupil_neon_pkg/lib/python3.8/site-packages/pupil_neon_pkg-1.0.0-py3.10.egg-info/PKG-INFO\n'}
+[1.574945] (pupil_neon_pkg) StdoutLine: {'line': b'-- Up-to-date: /root/ws/ros2_pupil_neon/install/pupil_neon_pkg/lib/python3.8/site-packages/pupil_neon_pkg\n'}
+[1.574997] (pupil_neon_pkg) StdoutLine: {'line': b'-- Up-to-date: /root/ws/ros2_pupil_neon/install/pupil_neon_pkg/lib/python3.8/site-packages/pupil_neon_pkg/pupil_publisher.py\n'}
+[1.575048] (pupil_neon_pkg) StdoutLine: {'line': b'-- Up-to-date: /root/ws/ros2_pupil_neon/install/pupil_neon_pkg/lib/python3.8/site-packages/pupil_neon_pkg/__init__.py\n'}
+[1.601823] (-) TimerEvent: {}
+[1.602033] (pupil_neon_pkg) StdoutLine: {'line': b"Listing '/root/ws/ros2_pupil_neon/install/pupil_neon_pkg/lib/python3.8/site-packages/pupil_neon_pkg'...\n"}
+[1.602158] (pupil_neon_pkg) StdoutLine: {'line': b"Compiling '/root/ws/ros2_pupil_neon/install/pupil_neon_pkg/lib/python3.8/site-packages/pupil_neon_pkg/__init__.py'...\n"}
+[1.602225] (pupil_neon_pkg) StdoutLine: {'line': b"Compiling '/root/ws/ros2_pupil_neon/install/pupil_neon_pkg/lib/python3.8/site-packages/pupil_neon_pkg/frame_publisher.py'...\n"}
+[1.602292] (pupil_neon_pkg) StdoutLine: {'line': b"Compiling '/root/ws/ros2_pupil_neon/install/pupil_neon_pkg/lib/python3.8/site-packages/pupil_neon_pkg/pupil_publisher.py'...\n"}
+[1.602349] (pupil_neon_pkg) StdoutLine: {'line': b"Compiling '/root/ws/ros2_pupil_neon/install/pupil_neon_pkg/lib/python3.8/site-packages/pupil_neon_pkg/tobii_glasses.py'...\n"}
+[1.605656] (pupil_neon_pkg) StdoutLine: {'line': b'-- Up-to-date: /root/ws/ros2_pupil_neon/install/pupil_neon_pkg/lib/pupil_neon_pkg/pupil_publisher.py\n'}
+[1.605821] (pupil_neon_pkg) StdoutLine: {'line': b'-- Up-to-date: /root/ws/ros2_pupil_neon/install/pupil_neon_pkg/lib/pupil_neon_pkg/frame_publisher.py\n'}
+[1.605902] (pupil_neon_pkg) StdoutLine: {'line': b'-- Up-to-date: /root/ws/ros2_pupil_neon/install/pupil_neon_pkg/lib/pupil_neon_pkg/emulator_publisher.py\n'}
+[1.606043] (pupil_neon_pkg) StdoutLine: {'line': b'-- Up-to-date: /root/ws/ros2_pupil_neon/install/pupil_neon_pkg/share/ament_index/resource_index/package_run_dependencies/pupil_neon_pkg\n'}
+[1.606200] (pupil_neon_pkg) StdoutLine: {'line': b'-- Installing: /root/ws/ros2_pupil_neon/install/pupil_neon_pkg/share/ament_index/resource_index/parent_prefix_path/pupil_neon_pkg\n'}
+[1.606282] (pupil_neon_pkg) StdoutLine: {'line': b'-- Installing: /root/ws/ros2_pupil_neon/install/pupil_neon_pkg/share/pupil_neon_pkg/environment/ament_prefix_path.sh\n'}
+[1.606353] (pupil_neon_pkg) StdoutLine: {'line': b'-- Installing: /root/ws/ros2_pupil_neon/install/pupil_neon_pkg/share/pupil_neon_pkg/environment/ament_prefix_path.dsv\n'}
+[1.606439] (pupil_neon_pkg) StdoutLine: {'line': b'-- Installing: /root/ws/ros2_pupil_neon/install/pupil_neon_pkg/share/pupil_neon_pkg/environment/path.sh\n'}
+[1.606494] (pupil_neon_pkg) StdoutLine: {'line': b'-- Installing: /root/ws/ros2_pupil_neon/install/pupil_neon_pkg/share/pupil_neon_pkg/environment/path.dsv\n'}
+[1.606549] (pupil_neon_pkg) StdoutLine: {'line': b'-- Up-to-date: /root/ws/ros2_pupil_neon/install/pupil_neon_pkg/share/pupil_neon_pkg/local_setup.bash\n'}
+[1.606623] (pupil_neon_pkg) StdoutLine: {'line': b'-- Installing: /root/ws/ros2_pupil_neon/install/pupil_neon_pkg/share/pupil_neon_pkg/local_setup.sh\n'}
+[1.606676] (pupil_neon_pkg) StdoutLine: {'line': b'-- Up-to-date: /root/ws/ros2_pupil_neon/install/pupil_neon_pkg/share/pupil_neon_pkg/local_setup.zsh\n'}
+[1.606748] (pupil_neon_pkg) StdoutLine: {'line': b'-- Installing: /root/ws/ros2_pupil_neon/install/pupil_neon_pkg/share/pupil_neon_pkg/local_setup.dsv\n'}
+[1.606822] (pupil_neon_pkg) StdoutLine: {'line': b'-- Up-to-date: /root/ws/ros2_pupil_neon/install/pupil_neon_pkg/share/pupil_neon_pkg/package.dsv\n'}
+[1.606887] (pupil_neon_pkg) StdoutLine: {'line': b'-- Up-to-date: /root/ws/ros2_pupil_neon/install/pupil_neon_pkg/share/ament_index/resource_index/packages/pupil_neon_pkg\n'}
+[1.606940] (pupil_neon_pkg) StdoutLine: {'line': b'-- Up-to-date: /root/ws/ros2_pupil_neon/install/pupil_neon_pkg/share/pupil_neon_pkg/cmake/pupil_neon_pkgConfig.cmake\n'}
+[1.606993] (pupil_neon_pkg) StdoutLine: {'line': b'-- Up-to-date: /root/ws/ros2_pupil_neon/install/pupil_neon_pkg/share/pupil_neon_pkg/cmake/pupil_neon_pkgConfig-version.cmake\n'}
+[1.607044] (pupil_neon_pkg) StdoutLine: {'line': b'-- Up-to-date: /root/ws/ros2_pupil_neon/install/pupil_neon_pkg/share/pupil_neon_pkg/package.xml\n'}
+[1.608589] (pupil_neon_pkg) CommandEnded: {'returncode': 0}
+[1.695944] (pupil_neon_pkg) JobEnded: {'identifier': 'pupil_neon_pkg', 'rc': 0}
+[1.696536] (-) EventReactorShutdown: {}

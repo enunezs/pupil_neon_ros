@@ -142,10 +142,10 @@ class emulatorPublisher(Node):
             frame = self.frame_buffer
 
         # * Adjust colour and resize image
-        frame = self.modify_image(frame, greyscale= greyscale , video_resolution = video_resolution)
+        #frame = self.modify_image(frame, greyscale= greyscale , video_resolution = video_resolution)
         if draw_circle:
-            frame = self.draw_circle(frame, gaze_coordinates)
-
+            #frame = self.draw_circle(frame, gaze_coordinates)
+            pass
         # * Pack image into message
         img_msg = self.bridge.cv2_to_imgmsg(frame)
         img_msg.header.stamp = self.get_clock().now().to_msg() # TODO: Change to glasses, align with pts?
@@ -166,8 +166,6 @@ class emulatorPublisher(Node):
         camera_info_msg.binning_x = 4
         camera_info_msg.binning_y = 4
         
-
-
 
         # * Publish the message
         self.publisher_front_camera.publish(img_msg)

@@ -1,0 +1,23 @@
+[0.014s] Invoking command in '/root/ws/ros2_pupil_neon/build/pupil_neon_pkg': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/foxy /usr/bin/cmake /root/ws/ros2_pupil_neon -DCMAKE_INSTALL_PREFIX=/root/ws/ros2_pupil_neon/install/pupil_neon_pkg
+[0.026s] -- Found ament_cmake: 0.9.12 (/opt/ros/foxy/share/ament_cmake/cmake)
+[0.045s] -- Using PYTHON_EXECUTABLE: /usr/bin/python3
+[0.159s] -- Found rclpy: 1.0.13 (/opt/ros/foxy/share/rclpy/cmake)
+[0.160s] -- Found std_msgs: 2.0.5 (/opt/ros/foxy/share/std_msgs/cmake)
+[0.175s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[0.177s] -- Found rosidl_adapter: 1.3.1 (/opt/ros/foxy/share/rosidl_adapter/cmake)
+[0.267s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[0.304s] -- Found sensor_msgs: 2.0.5 (/opt/ros/foxy/share/sensor_msgs/cmake)
+[0.402s] -- Found cv_bridge: 3.0.7 (/opt/ros/foxy/share/cv_bridge/cmake)
+[0.424s] -- Found rosidl_default_generators: 1.0.1 (/opt/ros/foxy/share/rosidl_default_generators/cmake)
+[0.432s] CMake Error at /opt/ros/foxy/share/ament_cmake_python/cmake/ament_python_install_package.cmake:46 (message):
+[0.432s]   ament_python_install_package() the Python package folder
+[0.432s]   '/root/ws/ros2_pupil_neon/pupil_neon_pkg' doesn't contain an '__init__.py'
+[0.432s]   file
+[0.433s] Call Stack (most recent call first):
+[0.433s]   /opt/ros/foxy/share/ament_cmake_python/cmake/ament_python_install_package.cmake:28 (_ament_cmake_python_install_package)
+[0.433s]   CMakeLists.txt:44 (ament_python_install_package)
+[0.433s] 
+[0.433s] 
+[0.434s] -- Configuring incomplete, errors occurred!
+[0.434s] See also "/root/ws/ros2_pupil_neon/build/pupil_neon_pkg/CMakeFiles/CMakeOutput.log".
+[0.438s] Invoked command in '/root/ws/ros2_pupil_neon/build/pupil_neon_pkg' returned '1': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/foxy /usr/bin/cmake /root/ws/ros2_pupil_neon -DCMAKE_INSTALL_PREFIX=/root/ws/ros2_pupil_neon/install/pupil_neon_pkg

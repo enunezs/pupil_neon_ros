@@ -6,6 +6,17 @@ ENV HOME /root
 WORKDIR $HOME
 SHELL ["/bin/bash", "-c"]
 
+# general utilities
+RUN apt-get update && apt-get install -y \
+    wget \
+    curl \
+    git \
+    gdb \
+    vim \
+    nano \
+    python3-pip \
+    unzip
+
 # install ros2 packages
 RUN apt-get update && apt-get install -y \ 
 	ros-$ROS_DISTRO-cv-bridge \
@@ -23,20 +34,11 @@ RUN apt-get update && apt-get install -y \
     	apt-utils \
     	dialog
     	
-# general utilities
-RUN apt-get update && apt-get install -y \
-    wget \
-    curl \
-    git \
-    gdb \
-    vim \
-    nano \
-    python3-pip \
-    unzip
-
-# ------
+# --- PIP	
 
 RUN pip3 install --upgrade pip
+
+# --- PUPIL GLASSES
 
 # Pupil Neon glasses
 RUN pip3 install pupil-labs-realtime-api
@@ -55,7 +57,7 @@ RUN apt-get update && apt-get install -y \
 
 
 #### SET ENVIRONMENT
-WORKDIR $HOME/ws/ros2_pupil_neon
+WORKDIR $HOME/ws/pupil_neon_pkg
 
 RUN echo 'alias python="python3"' >> $HOME/.bashrc
 RUN echo 'source /opt/ros/$ROS_DISTRO/setup.sh && colcon build' >> $HOME/.bashrc
