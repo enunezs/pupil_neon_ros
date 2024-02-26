@@ -1,6 +1,0 @@
-Invoking command in '/root/ws/ros2_pupil_neon/build/tobii_glasses_pkg': CMAKE_PREFIX_PATH=/opt/ros/foxy /usr/bin/cmake /root/ws/ros2_pupil_neon -DCMAKE_INSTALL_PREFIX=/root/ws/ros2_pupil_neon/install/tobii_glasses_pkg
-Invoked command in '/root/ws/ros2_pupil_neon/build/tobii_glasses_pkg' returned '0': CMAKE_PREFIX_PATH=/opt/ros/foxy /usr/bin/cmake /root/ws/ros2_pupil_neon -DCMAKE_INSTALL_PREFIX=/root/ws/ros2_pupil_neon/install/tobii_glasses_pkg
-Invoking command in '/root/ws/ros2_pupil_neon/build/tobii_glasses_pkg': CMAKE_PREFIX_PATH=/opt/ros/foxy /usr/bin/cmake --build /root/ws/ros2_pupil_neon/build/tobii_glasses_pkg -- -j12 -l12
-Invoked command in '/root/ws/ros2_pupil_neon/build/tobii_glasses_pkg' returned '0': CMAKE_PREFIX_PATH=/opt/ros/foxy /usr/bin/cmake --build /root/ws/ros2_pupil_neon/build/tobii_glasses_pkg -- -j12 -l12
-Invoking command in '/root/ws/ros2_pupil_neon/build/tobii_glasses_pkg': CMAKE_PREFIX_PATH=/opt/ros/foxy /usr/bin/cmake --install /root/ws/ros2_pupil_neon/build/tobii_glasses_pkg
-Invoked command in '/root/ws/ros2_pupil_neon/build/tobii_glasses_pkg' returned '0': CMAKE_PREFIX_PATH=/opt/ros/foxy /usr/bin/cmake --install /root/ws/ros2_pupil_neon/build/tobii_glasses_pkg

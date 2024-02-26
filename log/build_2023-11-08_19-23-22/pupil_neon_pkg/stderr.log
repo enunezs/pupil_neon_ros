@@ -1,5 +1,0 @@
-CMake Error at cmake_install.cmake:65 (file):
-  file INSTALL cannot find "/root/ws/ros2_pupil_neon/scripts/pupil_neon.py":
-  No such file or directory.
-
-
