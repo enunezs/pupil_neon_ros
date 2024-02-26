@@ -8,7 +8,7 @@
 
 # * Core ROS dependencies
 import rclpy
-from rclpy.node import Node
+from rclpy.node import Node  #
 
 # * Image messaging and conversion
 from cv_bridge import CvBridge
