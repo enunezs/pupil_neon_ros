@@ -24,31 +24,15 @@ from sensor_msgs.msg import CameraInfo
 from geometry_msgs.msg import PointStamped
 
 ### Settings ###
-## Video settings
-video_resolution = (1920, 1080)  # (full HD) Default for low framerate
-publish_freq = 100  # Hz Can be 33Hz, 100Hz or 200Hz
-greyscale = False
-camera_id = 0
-
-
 ### * DEBUG * ###
-draw_circle = True
-print_performance = False
-camera_depth = 1.00  # z-axis
-
-syncronize_data = False
-greyscale = False
 print_performance = False
 
 
 class emulatorPublisher(Node):
 
     def __init__(self):
-
-        # * Base node init
         super().__init__("glasses_emulator_node")
-        self.frame_buffer = None
-        global publish_freq
+        self.get_logger().info("Glasses Emulator Node is Running...")
 
         # * Intialize publishers
         self.publisher_front_camera = self.create_publisher(
@@ -61,72 +45,46 @@ class emulatorPublisher(Node):
             CameraInfo, "pupil_glasses/front_camera/camera_info", 1
         )
 
-        self.declare_parameter("camera_id", 0)
-        self.declare_parameter("publish_freq", 100)
-        # self.declare_parameter( 'print_performance', False )
-        self.declare_parameter("draw_circle", True)
-        self.declare_parameter("camera_depth", 1.00)
-        self.declare_parameter("video_resolution", (1920, 1080))
-
-        global syncronize_data
-        global publish_freq
-        global greyscale
-        global draw_circle
-        global camera_depth
-        global video_resolution
-
-        camera_id = self.get_parameter("camera_id").get_parameter_value().integer_value
-        publish_freq = (
-            self.get_parameter("publish_freq").get_parameter_value().integer_value
+        # Declare and retrieve parameters
+        self.camera_id = self.declare_and_get_parameter("camera_id", 0)
+        self.publish_freq = self.declare_and_get_parameter("publish_freq", 30)
+        self.draw_circle = self.declare_and_get_parameter("draw_circle", False)
+        self.camera_depth = self.declare_and_get_parameter("camera_depth", 1.0)
+        self.video_resolution = self.declare_and_get_parameter(
+            "video_resolution", (1600, 1200)
         )
-        # print_performance = self.get_parameter('print_performance').get_parameter_value().bool_value
-        draw_circle = self.get_parameter("draw_circle").get_parameter_value().bool_value
-        camera_depth = (
-            self.get_parameter("camera_depth").get_parameter_value().double_value
-        )
-        video_resolution = tuple(
-            self.get_parameter("video_resolution")
-            .get_parameter_value()
-            .integer_array_value
-        )
-
-        print(f"camera_id: {camera_id}")
-        print(f"publish_freq: {publish_freq}")
-        # print(f"print_performance: {print_performance}")
-        print(f"draw_circle: {draw_circle}")
-        print(f"camera_depth: {camera_depth}")
-        print(f"video_resolution: {video_resolution}")
 
         # * Connect to webcam
         print("Emulating glasses")
         self.bridge = CvBridge()
         print("Connecting to webcam 0")
-        self.cap = cv2.VideoCapture(camera_id)
-        # publish_freq = 25
+        self.cap = cv2.VideoCapture(self.camera_id)
         self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
 
         # * Check if connection is succesful
-
         if self.cap == False:
             print("Error opening video stream")
         else:
             print("Video stream opened")
 
-        # * markers
-        # self.publisher_marker = self.create_publisher(MarkerArray, "pupil_glasses/visualization_marker", 2)
-        # marker_pub = rospy.Publisher("/visualization_marker", Marker, queue_size = 2)
-
-        # self.last_ts = 0
         # * Create publisher
-        self.timer = self.create_timer(1.0 / publish_freq, self.publish_emulator_data)
+        self.timer = self.create_timer(
+            1.0 / self.publish_freq, self.publish_emulator_data
+        )
+
+        # * Init frame buffer
+        self.frame_buffer = None
 
         # * Init debug vars
         self.iterations = 0
         self.total_time = 0
-        self.timings = []
 
-        # self.pts_video_to_sensor_offset = 0
-        self.stamps = []
+    def declare_and_get_parameter(self, name, default):
+        self.declare_parameter(name, default)
+        self.get_logger().info(
+            f"Lodaded parameter {name}: {self.get_parameter(name).value}"
+        )
+        return self.get_parameter(name).value
 
     def publish_emulator_data(self):
 
@@ -140,7 +98,7 @@ class emulatorPublisher(Node):
         # * Pack gaze position into message
         gaze_msg = PointStamped()
         gaze_msg.point.x, gaze_msg.point.y = gaze_coordinates
-        gaze_msg.point.z = camera_depth
+        gaze_msg.point.z = self.camera_depth
         gaze_msg.header.stamp = self.get_clock().now().to_msg()
         gaze_msg.header.frame_id = "pupil_glasses_frame"
 
@@ -155,22 +113,21 @@ class emulatorPublisher(Node):
 
         # * Adjust colour and resize image
         # frame = self.modify_image(frame, greyscale= greyscale , video_resolution = video_resolution)
-        if draw_circle:
+        if self.draw_circle:
             # frame = self.draw_circle(frame, gaze_coordinates)
             pass
         # * Pack image into message
         img_msg = self.bridge.cv2_to_imgmsg(frame)
-        img_msg.header.stamp = (
-            self.get_clock().now().to_msg()
-        )  # TODO: Change to glasses, align with pts?
+        img_msg.header.stamp = self.get_clock().now().to_msg()
         img_msg.header.frame_id = "pupil_glasses_frame"
 
         # * Pack camera info into message
+        # ! Not updated! Need to think of a different approach
         camera_info_msg = CameraInfo()
         camera_info_msg.header.stamp = self.get_clock().now().to_msg()
         camera_info_msg.header.frame_id = "pupil_glasses_frame"
-        camera_info_msg.height = video_resolution[1]
-        camera_info_msg.width = video_resolution[0]
+        camera_info_msg.height = self.video_resolution[1]
+        camera_info_msg.width = self.video_resolution[0]
         camera_info_msg.distortion_model = "plumb_bob"
         camera_info_msg.d = [
             0.10538655,
@@ -225,7 +182,6 @@ class emulatorPublisher(Node):
             self.iterations = 0
             self.total_time = 0
 
-    # TODO: Pending, open parameters
     def modify_image(self, image, greyscale=False, video_resolution=(960, 540)):
         # Resize selected image to given dimension
         if greyscale:

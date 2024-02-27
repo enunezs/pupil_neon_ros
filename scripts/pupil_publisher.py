@@ -2,7 +2,6 @@
 
 # GNU V3.0
 # Copyright: Emanuel Nunez Sardinha
-# URL:
 
 # To run:
 """
@@ -38,14 +37,7 @@ from pupil_labs.realtime_api.simple import discover_one_device
 from pupil_labs.realtime_api.simple import Device
 
 ### Settings ###
-# video_resolution = (1920,1080)    # Full HD
-# video_resolution = (960, 540)       # (qHD)
-# video_resolution = (720, 480)     # Not recommmeded
-# video_resolution = (1280, 720)    # plain HD
-# video_resolution = (1600, 900)
-
-
-# Need to undistort here
+# Moved to config file
 
 
 class pupilPublisher(Node):
