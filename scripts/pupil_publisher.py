@@ -64,7 +64,7 @@ class pupilPublisher(Node):
         self.video_resolution = self.declare_and_get_parameter(
             "video_resolution", (1600, 1200)
         )
-        self.glasses_ip = self.declare_and_get_parameter("ip", "192.168.1.108")
+        self.glasses_ip = self.declare_and_get_parameter("ip", "192.168.1.118")
         self.glasses_port = self.declare_and_get_parameter("port", "8080")
         self.print_performance = self.declare_and_get_parameter(
             "print_performance", False
@@ -81,7 +81,7 @@ class pupilPublisher(Node):
     def declare_and_get_parameter(self, name, default):
         self.declare_parameter(name, default)
         self.get_logger().info(
-            f"Lodaded parameter {name}: {self.get_parameter(name).value}"
+            f"Loaded parameter {name}: {self.get_parameter(name).value}"
         )
         return self.get_parameter(name).value
 

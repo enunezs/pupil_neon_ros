@@ -20,7 +20,6 @@ import pyautogui
 
 # * Base messages
 from sensor_msgs.msg import Image
-from sensor_msgs.msg import CameraInfo
 from geometry_msgs.msg import PointStamped
 
 ### Settings ###
@@ -41,12 +40,9 @@ class emulatorPublisher(Node):
         self.publisher_gaze_position = self.create_publisher(
             PointStamped, "pupil_glasses/gaze_position", 1
         )
-        self.publisher_camera_info = self.create_publisher(
-            CameraInfo, "pupil_glasses/front_camera/camera_info", 1
-        )
 
         # Declare and retrieve parameters
-        self.camera_id = self.declare_and_get_parameter("camera_id", 0)
+        self.camera_id = self.declare_and_get_parameter("camera_id", 1)
         self.publish_freq = self.declare_and_get_parameter("publish_freq", 30)
         self.draw_circle = self.declare_and_get_parameter("draw_circle", False)
         self.camera_depth = self.declare_and_get_parameter("camera_depth", 1.0)
@@ -55,17 +51,18 @@ class emulatorPublisher(Node):
         )
 
         # * Connect to webcam
-        print("Emulating glasses")
+        self.get_logger().info("Emulating glasses")
         self.bridge = CvBridge()
-        print("Connecting to webcam 0")
+        self.get_logger().info(f"Connecting to webcam {self.camera_id}...")
+
         self.cap = cv2.VideoCapture(self.camera_id)
         self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
 
         # * Check if connection is succesful
         if self.cap == False:
-            print("Error opening video stream")
+            self.get_logger().info("Error opening video stream")
         else:
-            print("Video stream opened")
+            self.get_logger().info("Video stream opened")
 
         # * Create publisher
         self.timer = self.create_timer(
@@ -82,7 +79,7 @@ class emulatorPublisher(Node):
     def declare_and_get_parameter(self, name, default):
         self.declare_parameter(name, default)
         self.get_logger().info(
-            f"Lodaded parameter {name}: {self.get_parameter(name).value}"
+            f"Loaded parameter {name}: {self.get_parameter(name).value}"
         )
         return self.get_parameter(name).value
 
@@ -93,7 +90,6 @@ class emulatorPublisher(Node):
         # * Get latest data stream
         # Emulated: Webcam + Mouse
         gaze_coordinates = self.emulate_glasses()
-        print(gaze_coordinates)
 
         # * Pack gaze position into message
         gaze_msg = PointStamped()
@@ -120,36 +116,6 @@ class emulatorPublisher(Node):
         img_msg = self.bridge.cv2_to_imgmsg(frame)
         img_msg.header.stamp = self.get_clock().now().to_msg()
         img_msg.header.frame_id = "pupil_glasses_frame"
-
-        # * Pack camera info into message
-        # ! Not updated! Need to think of a different approach
-        camera_info_msg = CameraInfo()
-        camera_info_msg.header.stamp = self.get_clock().now().to_msg()
-        camera_info_msg.header.frame_id = "pupil_glasses_frame"
-        camera_info_msg.height = self.video_resolution[1]
-        camera_info_msg.width = self.video_resolution[0]
-        camera_info_msg.distortion_model = "plumb_bob"
-        camera_info_msg.d = [
-            0.10538655,
-            -0.45207925,
-            0.00821108,
-            -0.01366533,
-            0.5338796,
-        ]
-        camera_info_msg.k = [
-            1.10354357e03,
-            0.00000000e00,
-            9.21639123e02,
-            0.00000000e00,
-            1.16283535e03,
-            7.00397423e02,
-            0.00000000e00,
-            0.00000000e00,
-            1.00000000e00,
-        ]
-        # camera_info_msg.P = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, video_resolution[0]/2, video_resolution[1]/2, 1.0]
-        camera_info_msg.binning_x = 4
-        camera_info_msg.binning_y = 4
 
         # * Publish the message
         self.publisher_front_camera.publish(img_msg)
@@ -178,7 +144,9 @@ class emulatorPublisher(Node):
         self.iterations += 1
         self.total_time += (end_time - start_time).nanoseconds / 1000000000
         if self.iterations % 10 == 0:
-            print(f"Average time per iteration: {self.total_time/self.iterations} s")
+            self.get_logger().info(
+                f"Average time per iteration: {self.total_time/self.iterations} s"
+            )
             self.iterations = 0
             self.total_time = 0
 
@@ -232,7 +200,6 @@ class emulatorPublisher(Node):
 def main(args=None):
     rclpy.init(args=args)  # Initialize ROS DDS
     glasses_emulator_publisher = emulatorPublisher()  # Create instance of function
-    print("Glasses emulator publisher node is running...")
 
     try:
         rclpy.spin(glasses_emulator_publisher)  # prevents closure. Run until interrupt

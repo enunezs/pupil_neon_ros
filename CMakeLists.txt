@@ -15,19 +15,18 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-# find dependencies
+# find c++ dependencies
 find_package(ament_cmake REQUIRED)
 find_package(ament_cmake_python REQUIRED)
 find_package(rclpy REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(builtin_interfaces REQUIRED)
-find_package(sensor_msgs REQUIRED)
 
-#find_package(numpy REQUIRED)
-#find_package(cv2 REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
+
+find_package(OpenCV REQUIRED) 
 find_package(cv_bridge REQUIRED)
-#find_package(json REQUIRED)
-#find_package(pyautogui REQUIRED)
 
 find_package(rosidl_default_generators REQUIRED)
 
@@ -43,23 +42,13 @@ install(DIRECTORY
 )
 
 # Path to scripts
-#ament_python_install_package(scripts/)
 ament_python_install_package(${PROJECT_NAME})
-
 install(PROGRAMS
-  scripts/pupil_publisher.py
-  scripts/frame_publisher.py
   scripts/emulator_publisher.py
+  scripts/frame_publisher.py
+  scripts/pupil_publisher.py
   DESTINATION lib/${PROJECT_NAME}
 )
-
-
-# Generate custom messages   "msg/PupilGlasses.msg"
-#rosidl_generate_interfaces(${PROJECT_NAME}
-#  DEPENDENCIES builtin_interfaces
-#  DEPENDENCIES sensor_msgs
-#)
-
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
