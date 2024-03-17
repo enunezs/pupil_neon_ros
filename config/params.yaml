@@ -8,6 +8,7 @@
       - 1920
       - 1080
     print_performance: False
+    log_to_csv: False
 
 /pupil_glasses_node:
   ros__parameters:
@@ -20,3 +21,4 @@
     ip: "192.168.1.118"
     port: "8080"
     print_performance: False
+    log_to_csv: True
