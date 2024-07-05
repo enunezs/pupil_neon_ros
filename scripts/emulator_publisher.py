@@ -93,6 +93,7 @@ class emulatorPublisher(Node):
         front_camera_info.height = self.video_resolution[1]
         front_camera_info.distortion_model = "plumb_bob"
 
+        # "Default" values for old webcam
         front_camera_info.k = [
             887.79147665,
             0.0,
