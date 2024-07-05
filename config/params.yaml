@@ -5,8 +5,8 @@
     draw_circle: false
     camera_depth: 1.0
     video_resolution:
-      - 1920
-      - 1080
+      - 1600
+      - 1200
     print_performance: False
     camera_matrix:
       [
@@ -25,11 +25,11 @@
 /pupil_glasses_node:
   ros__parameters:
     publish_freq: 50
-    draw_circle: false
+    draw_circle: true
     camera_depth: 1.0
     video_resolution:
-      - 1920
-      - 1080
+      - 1600
+      - 1200
     ip: "192.168.0.2"
     port: "8080"
     print_performance: False
