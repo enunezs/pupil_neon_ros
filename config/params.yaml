@@ -1,6 +1,6 @@
 /glasses_emulator_node:
   ros__parameters:
-    camera_id: 2
+    camera_id: 0
     publish_freq: 50
     draw_circle: false
     camera_depth: 1.0
@@ -8,6 +8,19 @@
       - 1920
       - 1080
     print_performance: False
+    camera_matrix:
+      [
+        883.10398037,
+        0.0,
+        796.76508223,
+        0.0,
+        889.42718313,
+        646.25149238,
+        0.0,
+        0.0,
+        1.0,
+      ]
+    dist_coeff: [-0.28984511, 0.08497217, -0.00134947, -0.00125141, -0.01016795]
 
 /pupil_glasses_node:
   ros__parameters:
@@ -17,6 +30,6 @@
     video_resolution:
       - 1920
       - 1080
-    ip: "192.168.1.108"
+    ip: "192.168.0.2"
     port: "8080"
     print_performance: False

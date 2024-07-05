@@ -2,7 +2,7 @@
 
 Simple Pupil Neon interfacing for ROS2.
 
-Provides and publishes messages with the [Pupil Neon Glasses](https://pupil-labs.com/products/neon) basic API elements: `pupil_glasses/front_camera` and `pupil_glasses/gaze_position`.
+Provides and publishes messages with the [Pupil Neon Glasses](https://pupil-labs.com/products/neon) basic API elements: `pupil_glasses/front_camera/image_color` and `pupil_glasses/gaze_position`.
 
 The script has customizable variables to configure resolution, frequency and other variables, as well as using a webcam for emulation
 
@@ -40,16 +40,7 @@ export containerId=$(docker ps -l -q)
 
 ```
 
-Multiple parameters can be configured at: ```config/params.yaml```
-
-
-# TODO
-
-- [ ] Benchmark code. Move to non-blocking calls of the API
-- [x] Development mode / emulator
-- [x] Parameters
-- [ ] Camera calibration
- 
+Multiple parameters can be configured at: `config/params.yaml`
 
 <!--
 # Citation
