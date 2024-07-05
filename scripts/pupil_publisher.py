@@ -36,26 +36,24 @@ from geometry_msgs.msg import PointStamped
 from pupil_labs.realtime_api.simple import discover_one_device
 from pupil_labs.realtime_api.simple import Device
 
-### Settings ###
-# Moved to config file
-
 
 class pupilPublisher(Node):
     def __init__(self):
         super().__init__("pupil_glasses_node")
         self.get_logger().info("Pupil Neon Glasses Node is Running...")
 
-        # * Intialize publishers
+        ### * Intialize publishers
         self.publisher_front_camera = self.create_publisher(
-            Image, "pupil_glasses/front_camera", 1
-        )
-        self.publisher_gaze_position = self.create_publisher(
-            PointStamped, "pupil_glasses/gaze_position", 1
+            Image, "pupil_glasses/front_camera/image_color", 1
         )
         self.publisher_camera_info = self.create_publisher(
             CameraInfo, "pupil_glasses/front_camera/camera_info", 1
         )
-        # self.publisher_internal_camera = self.create_publisher(Image, "pupil_glasses/internal_camera", 1 )
+        self.publisher_gaze_position = self.create_publisher(
+            PointStamped, "pupil_glasses/gaze_position", 1
+        )
+
+        # self.publisher_internal_camera = self.create_publisher(Image, "pupil_glasses/internal_camera/image_color", 1 )
 
         # Declare and retrieve parameters
         self.publish_freq = self.declare_and_get_parameter("publish_freq", 30)
@@ -64,7 +62,7 @@ class pupilPublisher(Node):
         self.video_resolution = self.declare_and_get_parameter(
             "video_resolution", (1600, 1200)
         )
-        self.glasses_ip = self.declare_and_get_parameter("ip", "192.168.1.118")
+        self.glasses_ip = self.declare_and_get_parameter("ip", "192.168.0.2")
         self.glasses_port = self.declare_and_get_parameter("port", "8080")
         self.print_performance = self.declare_and_get_parameter(
             "print_performance", False
@@ -78,6 +76,9 @@ class pupilPublisher(Node):
 
         self.timer = self.create_timer(1.0 / self.publish_freq, self.publish_pupil_data)
 
+        # Prepare camera calibration message
+        self.front_camera_info = self.load_camera_info()
+
     def declare_and_get_parameter(self, name, default):
         self.declare_parameter(name, default)
         self.get_logger().info(
@@ -88,7 +89,6 @@ class pupilPublisher(Node):
     def connect_to_glasses(self, ip="192.168.1.108", port="8080"):
         # device = discover_one_device()
         device = Device(address=ip, port=port)
-
         self.get_logger().info(f"Phone IP address: {device.phone_ip}")
         self.get_logger().info(f"Phone name: {device.phone_name}")
         self.get_logger().info(f"Battery level: {device.battery_level_percent}%")
@@ -99,15 +99,6 @@ class pupilPublisher(Node):
             f"Serial number of connected glasses: {device.module_serial}"
         )
 
-        calibration = device.get_calibration()
-        self.get_logger().info(f"Camera Calibration Matrix: \n {calibration[0][2]}")
-        self.get_logger().info(
-            f"Camera Distortion Coefficients: \n {calibration[0][3]}"
-        )
-
-        # self.get_logger().info(calibration["scene_camera_matrix"][0])
-        # self.get_logger().info(calibration["scene_distortion_coefficients"][0])
-
         self.device = device
 
         recording = False
@@ -117,6 +108,30 @@ class pupilPublisher(Node):
 
         self.bridge = CvBridge()
         pass
+
+    def load_camera_info(self):
+        front_camera_info = CameraInfo()
+
+        front_camera_info.width = self.video_resolution[0]
+        front_camera_info.height = self.video_resolution[1]
+        front_camera_info.distortion_model = "plumb_bob"
+        calibration = self.device.get_calibration()
+
+        # Load front camera Distortion Coefficients
+        front_camera_info.d = calibration[0][3].astype(float).tolist()
+        front_camera_info.k = calibration[0][2].astype(float).flatten().tolist()
+
+        # TODO: Repeat for inner cameras, simply iterate over index
+
+        front_camera_info.binning_x = 0
+        front_camera_info.binning_y = 0
+        front_camera_info.roi.x_offset = 0
+        front_camera_info.roi.y_offset = 0
+        front_camera_info.roi.height = 0
+        front_camera_info.roi.width = 0
+        front_camera_info.roi.do_rectify = False
+
+        return front_camera_info
 
     def publish_pupil_data(self):
         device = self.device
@@ -149,30 +164,16 @@ class pupilPublisher(Node):
         # * Pack gaze position into message
         gaze_msg = PointStamped()
 
-        gaze_msg.point.x = gaze.x / 1600
-        gaze_msg.point.y = gaze.y / 1200
+        gaze_msg.point.x = gaze.x / self.video_resolution[0]
+        gaze_msg.point.y = gaze.y / self.video_resolution[1]
         gaze_msg.point.z = self.camera_depth
         gaze_msg.header.stamp = self.get_clock().now().to_msg()
         gaze_msg.header.frame_id = "pupil_glasses_frame"
 
-        # * Pack camera info into message
-        camera_info_msg = CameraInfo()
-        camera_info_msg.header.stamp = self.get_clock().now().to_msg()
-        camera_info_msg.header.frame_id = "pupil_glasses_frame"
-        camera_info_msg.height = self.video_resolution[1]
-        camera_info_msg.width = self.video_resolution[0]
-        camera_info_msg.distortion_model = "plumb_bob"
-        # camera_info_msg.D = [0.0, 0.0, 0.0, 0.0, 0.0]
-        # camera_info_msg.K = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0, 0, 1.0]
-        # camera_info_msg.R = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0, 0, 1.0]
-        # camera_info_msg.P = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, video_resolution[0]/2, video_resolution[1]/2, 1.0]
-        camera_info_msg.binning_x = 4
-        camera_info_msg.binning_y = 4
-
         # * Publish the message
         self.publisher_front_camera.publish(img_msg)
         self.publisher_gaze_position.publish(gaze_msg)
-        self.publisher_camera_info.publish(camera_info_msg)
+        self.publisher_camera_info.publish(self.front_camera_info)
 
         # * Print performance
         if self.print_performance:

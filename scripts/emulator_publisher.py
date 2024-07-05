@@ -120,7 +120,6 @@ class emulatorPublisher(Node):
         # * Publish the message
         self.publisher_front_camera.publish(img_msg)
         self.publisher_gaze_position.publish(gaze_msg)
-        self.publisher_camera_info.publish(camera_info_msg)
 
         # * Calculate time difference between iterations and frame rate
         end_time = self.get_clock().now()
