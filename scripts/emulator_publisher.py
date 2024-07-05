@@ -4,7 +4,7 @@
 # Copyright: Emanuel Nunez Sardinha
 # URL:
 
-## TODO: Add buffer to keep stracting frames from webcam
+## TODO: Add buffer to keep stacking frames from webcam
 
 # * Core ROS dependencies
 import rclpy
@@ -14,17 +14,17 @@ from rclpy.node import Node  #
 from cv_bridge import CvBridge
 import cv2  # TODO: specify particular modules of cv2
 import numpy as np
+import threading
+import queue
+
 
 # * Mouse emulation
 import pyautogui
 
 # * Base messages
 from sensor_msgs.msg import Image
+from sensor_msgs.msg import CameraInfo
 from geometry_msgs.msg import PointStamped
-
-### Settings ###
-### * DEBUG * ###
-print_performance = False
 
 
 class emulatorPublisher(Node):
@@ -33,55 +33,126 @@ class emulatorPublisher(Node):
         super().__init__("glasses_emulator_node")
         self.get_logger().info("Glasses Emulator Node is Running...")
 
-        # * Intialize publishers
+        ### * Intialize publishers
         self.publisher_front_camera = self.create_publisher(
-            Image, "pupil_glasses/front_camera", 1
+            Image, "pupil_glasses/front_camera/image_color", 1
+        )
+        self.publisher_camera_info = self.create_publisher(
+            CameraInfo, "pupil_glasses/front_camera/camera_info", 1
         )
         self.publisher_gaze_position = self.create_publisher(
             PointStamped, "pupil_glasses/gaze_position", 1
         )
 
-        # Declare and retrieve parameters
-        self.camera_id = self.declare_and_get_parameter("camera_id", 1)
+        # * Declare and retrieve parameters
+        self.camera_id = self.declare_and_get_parameter("camera_id", 0)
         self.publish_freq = self.declare_and_get_parameter("publish_freq", 30)
         self.draw_circle = self.declare_and_get_parameter("draw_circle", False)
         self.camera_depth = self.declare_and_get_parameter("camera_depth", 1.0)
         self.video_resolution = self.declare_and_get_parameter(
             "video_resolution", (1600, 1200)
         )
+        self.print_performance = self.declare_and_get_parameter(
+            "print_performance", False
+        )
 
-        # * Connect to webcam
-        self.get_logger().info("Emulating glasses")
+        # Prepare camera calibration message
+        self.front_camera_info = self.load_camera_info()
+
         self.bridge = CvBridge()
+
+        # Start the frame capture thread
+        self.get_logger().info("Emulating glasses")
         self.get_logger().info(f"Connecting to webcam {self.camera_id}...")
-
-        self.cap = cv2.VideoCapture(self.camera_id)
-        self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
-
-        # * Check if connection is succesful
-        if self.cap == False:
-            self.get_logger().info("Error opening video stream")
-        else:
-            self.get_logger().info("Video stream opened")
+        self.frame_queue = queue.Queue(maxsize=10)  # Adjust maxsize as needed
+        self.capture_thread = threading.Thread(target=self.capture_frames)
+        self.capture_thread.daemon = True
+        self.capture_thread.start()
 
         # * Create publisher
         self.timer = self.create_timer(
             1.0 / self.publish_freq, self.publish_emulator_data
         )
 
-        # * Init frame buffer
-        self.frame_buffer = None
-
         # * Init debug vars
         self.iterations = 0
         self.total_time = 0
 
+    # * Helper functions
     def declare_and_get_parameter(self, name, default):
         self.declare_parameter(name, default)
         self.get_logger().info(
             f"Loaded parameter {name}: {self.get_parameter(name).value}"
         )
         return self.get_parameter(name).value
+
+    def load_camera_info(self):
+        # For later. Needs calibration of the webcam. For now, use default values
+        front_camera_info = CameraInfo()
+        front_camera_info.width = self.video_resolution[0]
+        front_camera_info.height = self.video_resolution[1]
+        front_camera_info.distortion_model = "plumb_bob"
+
+        front_camera_info.k = [
+            883.10398037,
+            0.0,
+            796.76508223,
+            0.0,
+            889.42718313,
+            646.25149238,
+            0.0,
+            0.0,
+            1.0,
+        ]
+        front_camera_info.d = [
+            -0.28984511,
+            0.08497217,
+            -0.00134947,
+            -0.00125141,
+            -0.01016795,
+        ]
+        # TODO: Repeat for inner cameras, simply iterate over index
+
+        front_camera_info.binning_x = 0
+        front_camera_info.binning_y = 0
+        front_camera_info.roi.x_offset = 0
+        front_camera_info.roi.y_offset = 0
+        front_camera_info.roi.height = 0
+        front_camera_info.roi.width = 0
+        front_camera_info.roi.do_rectify = False
+
+        return front_camera_info
+
+    # Open separate thread to capture frames from webcam
+    def capture_frames(self):
+        cap = cv2.VideoCapture(self.camera_id, cv2.CAP_V4L)  # Use V4L for Linux
+        cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+
+        if not cap:
+            self.get_logger().info("Error opening video stream")
+        else:
+            self.get_logger().info("Video stream opened")
+
+        while True:
+            ret, frame = cap.read()
+            if not ret:
+                break
+
+            if not self.frame_queue.full():
+                self.frame_queue.put(frame)
+            else:
+                # Discard the oldest frame (if needed)
+                self.frame_queue.get()
+                self.frame_queue.put(frame)
+
+    # Get mouse coordinates as function of screen size
+    def emulate_glasses(self):
+        # Get screen size
+        screen_res_x, screen_res_y = pyautogui.size()
+        cursor_x, cursor_y = pyautogui.position()
+        gaze_x, gaze_y = cursor_x / screen_res_x, cursor_y / screen_res_y
+
+        return (gaze_x, gaze_y)
 
     def publish_emulator_data(self):
 
@@ -99,13 +170,10 @@ class emulatorPublisher(Node):
         gaze_msg.header.frame_id = "pupil_glasses_frame"
 
         # * Get latest image frame
-        ret, frame = self.cap.read()
-        if ret:
-            self.frame_buffer = frame
+        if not self.frame_queue.empty():
+            frame = self.frame_queue.get()
         else:
-            if not self.frame_buffer:
-                return
-            frame = self.frame_buffer
+            return
 
         # * Adjust colour and resize image
         # frame = self.modify_image(frame, greyscale= greyscale , video_resolution = video_resolution)
@@ -120,24 +188,13 @@ class emulatorPublisher(Node):
         # * Publish the message
         self.publisher_front_camera.publish(img_msg)
         self.publisher_gaze_position.publish(gaze_msg)
+        self.publisher_camera_info.publish(self.front_camera_info)
 
         # * Calculate time difference between iterations and frame rate
         end_time = self.get_clock().now()
 
-        if print_performance:
+        if self.print_performance:
             self.print_performance_stats(start_time, end_time)
-
-    # Get mouse coordinates as fimctopm of screen size
-    def emulate_glasses(self):
-        # Get screen size
-        screen_res_x, screen_res_y = pyautogui.size()
-        cursor_x, cursor_y = pyautogui.position()
-        gaze_x, gaze_y = cursor_x / screen_res_x, cursor_y / screen_res_y
-        # ros_time = self.get_clock().now().nanoseconds/1e9
-        # ts = ros_time + 500000
-        # pts = ros_time*0.09
-
-        return (gaze_x, gaze_y)
 
     def print_performance_stats(self, start_time, end_time):
         self.iterations += 1
@@ -153,13 +210,8 @@ class emulatorPublisher(Node):
         # Resize selected image to given dimension
         if greyscale:
             image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
         image = cv2.resize(image, video_resolution)
-
-        # Convert to uint8
         image = image.astype(np.uint8)
-        # Apply Gaussian blur to remove noise -> Best left for receiver?
-        # image = cv2.GaussianBlur(image, (5, 5), 0)
 
         return image
 
