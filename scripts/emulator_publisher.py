@@ -23,7 +23,6 @@ import pyautogui
 
 # * Base messages
 from sensor_msgs.msg import Image
-from sensor_msgs.msg import CameraInfo
 from geometry_msgs.msg import PointStamped
 
 

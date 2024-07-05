@@ -83,6 +83,7 @@ class pupilPublisher(Node):
         self.declare_parameter(name, default)
         self.get_logger().info(
             f"Loaded parameter {name}: {self.get_parameter(name).value}"
+            f"Loaded parameter {name}: {self.get_parameter(name).value}"
         )
         return self.get_parameter(name).value
 
