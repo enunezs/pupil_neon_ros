@@ -9,6 +9,8 @@ The script has customizable variables to configure resolution, frequency and oth
 Using the Pupil Labs Realtime API [pupil-labs-realtime-api
 ](https://pupil-labs-realtime-api.readthedocs.io/en/stable/api/index.html).
 
+Pending: Explain that we have camera properties
+
 # Usage
 
 To use, clone the repository to your workspace, connect on the same wifi network as the Pupil Glasses (or share connection on the phone and connect) and run:
