@@ -24,12 +24,12 @@
 
 /pupil_glasses_node:
   ros__parameters:
-    publish_freq: 30
+    publish_freq: 50
     draw_circle: true
     camera_depth: 1.0
     video_resolution:
       - 1600
       - 1200
-    ip: "192.168.1.2"
+    ip: "10.0.0.2"
     port: "8080"
     print_performance: False
