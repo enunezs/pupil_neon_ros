@@ -19,40 +19,51 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(ament_cmake_python REQUIRED)
 find_package(rclpy REQUIRED)
-find_package(std_msgs REQUIRED)
-find_package(builtin_interfaces REQUIRED)
 
-find_package(sensor_msgs REQUIRED)
+find_package(builtin_interfaces REQUIRED)
+find_package(std_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
 
 find_package(OpenCV REQUIRED) 
 find_package(cv_bridge REQUIRED)
 
+# Custom messages
 find_package(rosidl_default_generators REQUIRED)
+
+rosidl_generate_interfaces(${PROJECT_NAME}
+  "msg/Eye.msg"
+  "msg/GazeData.msg"
+  "msg/GazeEvent.msg"
+  DEPENDENCIES builtin_interfaces std_msgs geometry_msgs sensor_msgs
+ )
+
+#Path to scripts
+# ament_python_install_package(scripts)
+
+install(PROGRAMS
+  # scripts/emulator_publisher.py
+  scripts/pupil_async.py
+  # scripts/frame_publisher.py
+  scripts/pupil_publisher.py
+  DESTINATION lib/${PROJECT_NAME}
+)
 
 # Path to resources
 install(DIRECTORY
   launch
   DESTINATION share/${PROJECT_NAME}/
 )
+
 # install config files
 install(DIRECTORY
   config
   DESTINATION share/${PROJECT_NAME}
 )
 
-# Path to scripts
-ament_python_install_package(${PROJECT_NAME})
-install(PROGRAMS
-  scripts/emulator_publisher.py
-  scripts/frame_publisher.py
-  scripts/pupil_publisher.py
-  DESTINATION lib/${PROJECT_NAME}
-)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
-
   # the following line skips the linter which checks for copyrights
   # uncomment the line when a copyright and license is not present in all source files
   # set(ament_cmake_copyright_FOUND TRUE)

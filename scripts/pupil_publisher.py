@@ -9,9 +9,7 @@ ros2 run pupil_neon_pkg pupil_publisher.py --ros-args --params-file src/pupil_ne
 """
 
 # TODO
-# Benchmark -> test max refresh rate
-# change to wired connection (buy adaptor)
-
+# =======ROS2 Dependencies=======#
 # * Core ROS dependencies
 import rclpy
 from rclpy.node import Node
@@ -19,26 +17,34 @@ from rclpy.node import Node
 # * Image messaging and conversion
 from cv_bridge import CvBridge
 
-# * Core time dependencies
-from datetime import datetime
+# * Base messages
+from sensor_msgs.msg import Image
+from sensor_msgs.msg import CameraInfo
+from geometry_msgs.msg import PointStamped
 
 # * Image messaging and conversion
 from cv_bridge import CvBridge
 from cv2 import cvtColor, COLOR_BGR2RGB, destroyAllWindows
 from cv2 import circle as cv2_circle
 
-# * Base messages
-from sensor_msgs.msg import Image
-from sensor_msgs.msg import CameraInfo
-from geometry_msgs.msg import PointStamped
+# =======Pupil Neon Glasses=======#
+# * Core time dependencies
+from datetime import datetime
 
 # * Pupil
 from pupil_labs.realtime_api.simple import discover_one_device
 from pupil_labs.realtime_api.simple import Device
 
+# TODO: Implement eye events
+from pupil_labs.realtime_api.streaming.eye_events import (
+    BlinkEventData,
+    FixationEventData,
+)
+
 
 class pupilPublisher(Node):
     def __init__(self):
+        # Initialize the ROS node
         super().__init__("pupil_glasses_node")
         self.get_logger().info("Pupil Neon Glasses Node is Running...")
 
@@ -52,77 +58,102 @@ class pupilPublisher(Node):
         self.publisher_gaze_position = self.create_publisher(
             PointStamped, "pupil_glasses/gaze_position", 1
         )
-
         # self.publisher_internal_camera = self.create_publisher(Image, "pupil_glasses/internal_camera/image_color", 1 )
 
-        # Declare and retrieve parameters
+        ### * Declare and retrieve parameters
         self.publish_freq = self.declare_and_get_parameter("publish_freq", 30)
         self.draw_circle = self.declare_and_get_parameter("draw_circle", False)
         self.camera_depth = self.declare_and_get_parameter("camera_depth", 1.0)
         self.video_resolution = self.declare_and_get_parameter(
             "video_resolution", (1600, 1200)
         )
-        self.glasses_ip = self.declare_and_get_parameter("ip", "192.168.0.2")
+        self.glasses_ip = self.declare_and_get_parameter("ip", "10.0.0.2")
         self.glasses_port = self.declare_and_get_parameter("port", "8080")
         self.print_performance = self.declare_and_get_parameter(
             "print_performance", False
         )
 
-        # Connect to glasses
+        ### * Connect to glasses
         self.get_logger().info("Connecting to Pupil Glasses...")
-        self.get_logger().info(f"IP: {self.glasses_ip}")
-        self.get_logger().info(f"Port: {self.glasses_port}")
-        self.connect_to_glasses(ip=self.glasses_ip, port=self.glasses_port)
+        self.pupil_glasses = self.connect_to_glasses(
+            ip=self.glasses_ip, port=self.glasses_port
+        )
+        if self.pupil_glasses is None:
+            self.get_logger().error("No glasses found, exiting...")
+            rclpy.shutdown()
+            return
 
+        self.get_logger().info(f"Found glasses: {self.pupil_glasses.phone_name}")
+        self.bridge = CvBridge()
+        ### * Timer
         self.timer = self.create_timer(1.0 / self.publish_freq, self.publish_pupil_data)
+        self.calibration_timer = self.create_timer(0.5, self.publish_camera_info)
 
         # Prepare camera calibration message
-        self.front_camera_info = self.load_camera_info()
+        self.front_camera_info = self.load_camera_calibration_info()
 
+    ### * Declare and get parameter helper
     def declare_and_get_parameter(self, name, default):
         self.declare_parameter(name, default)
         self.get_logger().info(
             f"Loaded parameter {name}: {self.get_parameter(name).value}"
-            f"Loaded parameter {name}: {self.get_parameter(name).value}"
         )
         return self.get_parameter(name).value
 
+    ### * Glasses connection
     def connect_to_glasses(self, ip="192.168.1.108", port="8080"):
-        # device = discover_one_device()
-        device = Device(address=ip, port=port)
-        self.get_logger().info(f"Phone IP address: {device.phone_ip}")
-        self.get_logger().info(f"Phone name: {device.phone_name}")
-        self.get_logger().info(f"Battery level: {device.battery_level_percent}%")
+
+        pupil_glasses = Device(address=ip, port=port)
+        self.get_logger().info(f"Phone IP address: {pupil_glasses.phone_ip}")
+        self.get_logger().info(f"Phone name: {pupil_glasses.phone_name}")
+        self.get_logger().info(f"Battery level: {pupil_glasses.battery_level_percent}%")
         self.get_logger().info(
-            f"Free storage: {device.memory_num_free_bytes / 1024**3:.1f} GB"
+            f"Free storage: {pupil_glasses.memory_num_free_bytes / 1024**3:.1f} GB"
         )
         self.get_logger().info(
-            f"Serial number of connected glasses: {device.module_serial}"
+            f"Serial number of connected glasses: {pupil_glasses.module_serial}"
         )
 
-        self.device = device
+        # Fallback
+        if pupil_glasses is None:
+            self.get_logger().info("No glasses found, looking for generic device...")
+            pupil_glasses = discover_one_device(max_search_duration_seconds=10)
+        else:
+            self.get_logger().info(f"Found glasses: {pupil_glasses.phone_name}")
 
-        recording = False
-        if recording:
-            recording_id = device.recording_start()
-            self.get_logger().info(f"Started recording with id {recording_id}")
+        return pupil_glasses
 
-        self.bridge = CvBridge()
-        pass
-
-    def load_camera_info(self):
+    def load_camera_calibration_info(self):
         front_camera_info = CameraInfo()
 
         front_camera_info.width = self.video_resolution[0]
         front_camera_info.height = self.video_resolution[1]
         front_camera_info.distortion_model = "plumb_bob"
-        calibration = self.device.get_calibration()
+        calibration = self.pupil_glasses.get_calibration()
+
+        front_camera_info.d = calibration.scene_distortion_coefficients.astype(
+            float
+        ).tolist()
+        K = calibration.scene_camera_matrix.astype(float)
+        front_camera_info.k = K.flatten().tolist()
+
+        # Identity rectification matrix as fallback
+        front_camera_info.r = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
+
+        fx = K[0, 0]
+        fy = K[1, 1]
+        cx = K[0, 2]
+        cy = K[1, 2]
+        front_camera_info.p = [fx, 0.0, cx, 0.0, 0.0, fy, cy, 0.0, 0.0, 0.0, 1.0, 0.0]
 
         # Load front camera Distortion Coefficients
-        front_camera_info.d = calibration[0][3].astype(float).tolist()
-        front_camera_info.k = calibration[0][2].astype(float).flatten().tolist()
 
-        # TODO: Repeat for inner cameras, simply iterate over index
+        # Projection matrix (3x4)
+        fx = K[0, 0]
+        fy = K[1, 1]
+        cx = K[0, 2]
+        cy = K[1, 2]
+        front_camera_info.p = [fx, 0.0, cx, 0.0, 0.0, fy, cy, 0.0, 0.0, 0.0, 1.0, 0.0]
 
         front_camera_info.binning_x = 0
         front_camera_info.binning_y = 0
@@ -134,8 +165,21 @@ class pupilPublisher(Node):
 
         return front_camera_info
 
+    ### * ROS2 CameraInfo publisher
+    def publish_camera_info(self):
+        # Stamp message with current time
+        self.front_camera_info.header.stamp = self.get_clock().now().to_msg()
+        self.front_camera_info.header.frame_id = "camera_frame"
+
+        self.publisher_camera_info.publish(self.front_camera_info)
+        self.get_logger().info("Published CameraInfo once")
+
+        # Cancel timer so we don't publish again
+        self.calibration_timer.cancel()
+
+    ### * Publish Data
     def publish_pupil_data(self):
-        device = self.device
+        device = self.pupil_glasses
         start_time = self.get_clock().now()
 
         ### Get the frame
@@ -282,3 +326,9 @@ Calibration:
 
 
 """
+
+# TODO: Turn to action
+# recording = False
+# if recording:
+#     recording_id = pupil_glasses.recording_start()
+#     self.get_logger().info(f"Started recording with id {recording_id}")
