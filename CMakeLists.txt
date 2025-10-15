@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(pupil_neon_pkg)
+project(pupil_neon_ros)
 
 # Default to C99
 if(NOT CMAKE_C_STANDARD)
@@ -42,10 +42,11 @@ rosidl_generate_interfaces(${PROJECT_NAME}
 # ament_python_install_package(scripts)
 
 install(PROGRAMS
+  scripts/async_pupil_publisher.py
+  scripts/rviz_visualizer.py
   # scripts/emulator_publisher.py
-  scripts/pupil_async.py
   # scripts/frame_publisher.py
-  scripts/pupil_publisher.py
+  # scripts/pupil_publisher.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

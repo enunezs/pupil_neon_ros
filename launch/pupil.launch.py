@@ -10,14 +10,14 @@ def generate_launch_description():
     launch_description = LaunchDescription()
 
     config = os.path.join(
-        get_package_share_directory("pupil_neon_pkg"), "config", "params.yaml"
+        get_package_share_directory("pupil_neon_ros"), "config", "params.yaml"
     )
 
     pupil_node = Node(
-        package="pupil_neon_pkg",
+        package="pupil_neon_ros",
         executable="pupil_publisher.py",
         name="pupil_glasses_node",
-        arguments=[("__log_level:=debug")],
+        arguments=["__log_level:=debug"],
         output="screen",
         parameters=[config],
     )

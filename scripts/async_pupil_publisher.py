@@ -10,14 +10,14 @@ from rclpy.node import Node
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 
-from sensor_msgs.msg import Image, CompressedImage, Imu
+from sensor_msgs.msg import Image, CompressedImage, Imu, CameraInfo
 
-from geometry_msgs.msg import PointStamped, Quaternion, Vector3
+from geometry_msgs.msg import PointStamped, Quaternion, Vector3, TransformStamped
 
 import cv2
 import numpy as np
 
-from pupil_neon_pkg.msg import (
+from pupil_neon_ros.msg import (
     GazeData,
     Eye,
     GazeEvent,
@@ -38,21 +38,28 @@ from pupil_labs.realtime_api import (
 from pupil_labs.realtime_api.streaming import (  # noqa: E402
     BlinkEventData,
     FixationEventData,
+    FixationOnsetEventData,
 )
 
+import tf2_ros
+
+### ? PENDING: ###
 # DONE: Add other sensors
 # DONE: Add IMU: Good exercise
 # DONE: Change message to compressed
 # DONE: Fix blinks
+# DONE: Upload
 
-# LOW: Add eye cameras
-# ! TODO: Make external plotter for data
+### ! HIGH Priority ###
+# ! TODO: Make external plotter for data, specially for saccade visualisation
+# TODO: validate camera calibration is accurate
 # ! TODO: Make recalibration service, use offset?
 
+### * low Priority ###
+# TODO: Load params
 # TODO: Fix combined image, make combined image optional, disabled by default. Disable queues too.
 # TODO: Document it
-# TODO: Load params
-# TODO: Reduce library dependencies
+# LOW: Add eye cameras
 
 
 class PupilLabsROS2Node(Node):
@@ -69,9 +76,9 @@ class PupilLabsROS2Node(Node):
         self.front_image_pub = self.create_publisher(
             CompressedImage, "pupil_glasses/front_image", 10
         )
-        self.overlay_image_pub = self.create_publisher(
-            Image, "pupil_glasses/overlay_image", 2
-        )
+        # self.overlay_image_pub = self.create_publisher(
+        #     Image, "pupil_glasses/overlay_image", 2
+        # )
         self.gaze_data_pub = self.create_publisher(
             GazeData, "pupil_glasses/gaze_data", 5
         )
@@ -95,15 +102,50 @@ class PupilLabsROS2Node(Node):
         )
         self.imu_pub = self.create_publisher(Imu, "pupil_glasses/imu", 5)
 
+        self.camera_calib_pub = self.create_publisher(
+            CameraInfo, "pupil_glasses/front_camera/camera_info", 10
+        )
+
         # Pre-allocate messages
         self.gaze_point = PointStamped()
         self.gaze_msg = GazeData()
         self.gaze_msg.left_eye = Eye()
         self.gaze_msg.right_eye = Eye()
 
+        # ---- Static TF: map -> pupil_glasses ----
+        self.tf_broadcaster = tf2_ros.StaticTransformBroadcaster(self)
+        static_tf = TransformStamped()
+        static_tf.header.stamp = self.get_clock().now().to_msg()
+        static_tf.header.frame_id = "world"  # parent frame
+        static_tf.child_frame_id = "camera_optical_frame"  # child frame
+        static_tf.transform.translation.x = 0.0
+        static_tf.transform.translation.y = 0.0
+        static_tf.transform.translation.z = 0.0
+        static_tf.transform.rotation.x = 0.0
+        static_tf.transform.rotation.y = 0.0
+        static_tf.transform.rotation.z = 0.0
+        static_tf.transform.rotation.w = 1.0
+        self.tf_broadcaster.sendTransform(static_tf)
+
+        # Parameters
+        # self.declare_parameter("ip", "192.168.0.2")
+        # self.declare_parameter("port", 8080)
+        # self.declare_parameter("draw_circle", False)
+        # self.declare_parameter("camera_depth", 1.0)
+        # self.declare_parameter("video_resolution", [1600, 1200])
+        # self.declare_parameter("print_performance", False)
+
+        # self.ip = self.get_parameter("ip").value
+        # self.port = self.get_parameter("port").value
+        # self.draw_circle = self.get_parameter("draw_circle").value
+        # self.camera_depth = self.get_parameter("camera_depth").value
+        # self.video_resolution = tuple(self.get_parameter("video_resolution").value)
+        # self.print_performance = self.get_parameter("print_performance").value
+
         # Control flags
         self.running = True
         self.device_connected = False
+        self.front_camera_info = None
 
         # Start the async pupil labs connection in a separate thread
         self.pupil_thread = threading.Thread(target=self._run_pupil_async_loop)
@@ -111,6 +153,23 @@ class PupilLabsROS2Node(Node):
         self.pupil_thread.start()
 
         self.get_logger().info("Pupil Labs ROS2 Node initialized")
+
+        # Publish CameraInfo
+        timer_period = 0.5  # seconds
+        self.camera_calib_timer = self.create_timer(
+            timer_period, self.camera_calib_callback
+        )
+
+    def camera_calib_callback(self):
+        if self.front_camera_info is not None:
+            # self.get_logger().info(f"camera info: {self.front_camera_info}")
+
+            self.front_camera_info.header.stamp = self.get_clock().now().to_msg()
+            self.front_camera_info.header.frame_id = (
+                self.front_camera_info.header.frame_id
+            )
+
+            self.camera_calib_pub.publish(self.front_camera_info)
 
     # On a separate thread, collect data
     def _run_pupil_async_loop(self):
@@ -159,7 +218,7 @@ class PupilLabsROS2Node(Node):
             if not sensor_imu.connected:
                 print(f"Imu sensor is not connected to {device}")
                 return
-
+            self.front_camera_info = await self._load_camera_info(device)
             restart_on_disconnect = True
 
             # Queues for sensor data
@@ -169,7 +228,9 @@ class PupilLabsROS2Node(Node):
             self.queue_imu = asyncio.Queue(maxsize=3)
 
             self.device_connected = True
-            self.get_logger().info("All sensors connected, starting data streams...")
+            self.get_logger().info(
+                "\n Pupil Neon Glasses READY! \n All sensors connected. \n Starting data streams..."
+            )
 
             # Create async tasks for publishing lone sensors
             process_video = asyncio.create_task(
@@ -225,6 +286,45 @@ class PupilLabsROS2Node(Node):
                 process_imu.cancel()
                 # process_data.cancel()
 
+    async def _load_camera_info(self, pupil_glasses):
+        # TODO:
+        cam_info_msg = CameraInfo()
+        calibration = await pupil_glasses.get_calibration()
+        # self.get_logger().info(f"Calibration: {calibration}")
+
+        cam_info_msg.width = 1600
+        cam_info_msg.height = 1200
+        cam_info_msg.distortion_model = "plumb_bob"
+
+        # D - Distortion coefficients
+        cam_info_msg.d = calibration.scene_distortion_coefficients.astype(
+            float
+        ).tolist()
+
+        # K - Camera intrinsic matrix
+        K = calibration.scene_camera_matrix.astype(float)
+        cam_info_msg.k = K.flatten().tolist()
+
+        # R - Rectification matrix
+        # cam_info_msg.r = [
+        #     (calibration.scene_extrinsics_affine_matrix[0:2, 0:2]).flatten().tolist()
+        # ]
+        cam_info_msg.r = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
+        fx = K[0, 0]
+        fy = K[1, 1]
+        cx = K[0, 2]
+        cy = K[1, 2]
+
+        cam_info_msg.p = [fx, 0.0, cx, 0.0, 0.0, fy, cy, 0.0, 0.0, 0.0, 1.0, 0.0]
+        cam_info_msg.binning_x = 0
+        cam_info_msg.binning_y = 0
+        cam_info_msg.roi.x_offset = 0
+        cam_info_msg.roi.y_offset = 0
+        cam_info_msg.roi.height = 0
+        cam_info_msg.roi.width = 0
+        cam_info_msg.roi.do_rectify = False
+        return cam_info_msg
+
     async def _enqueue_sensor_data(
         self, sensor: T.AsyncIterator, queue: asyncio.Queue, sensor_type: str
     ):
@@ -250,7 +350,11 @@ class PupilLabsROS2Node(Node):
                 elif sensor_type == "gaze":
                     self._publish_gaze_data(datum)
 
-                elif sensor_type == "gaze_events":
+                elif (
+                    isinstance(datum, FixationOnsetEventData)
+                    or isinstance(datum, FixationEventData)
+                    or isinstance(datum, BlinkEventData)
+                ):
                     self._publish_gaze_events_data(datum)
 
                 elif sensor_type == "imu":
@@ -383,14 +487,6 @@ class PupilLabsROS2Node(Node):
         except Exception as e:
             self.get_logger().error(f"Error publishing front image: {e}")
 
-    def _publish_overlay_image(self, overlay_image, timestamp):
-        """Publish overlay image to ROS topic"""
-        try:
-            ros_image = self.bridge.cv2_to_imgmsg(overlay_image, "bgr8")
-            ros_image.header = self._create_header(timestamp)
-            self.overlay_image_pub.publish(ros_image)
-        except Exception as e:
-            self.get_logger().error(f"Error publishing overlay image: {e}")
 
     def _publish_imu_data(self, imu_datum):
         try:
@@ -509,7 +605,11 @@ class PupilLabsROS2Node(Node):
     def _publish_gaze_events_data(self, gaze_events_datum):
         """Publish gaze events to ROS topic"""
         try:
-            if not isinstance(gaze_events_datum, (FixationEventData, BlinkEventData)):
+            # self.get_logger().info(f"Publishing gaze events data: {gaze_events_datum}")
+            if not isinstance(
+                gaze_events_datum,
+                (FixationEventData, FixationOnsetEventData, BlinkEventData),
+            ):
                 return  # Ignore unsupported types
 
             # Build base message
@@ -567,7 +667,7 @@ class PupilLabsROS2Node(Node):
     def _create_header(self, timestamp):
         """Create ROS header from datetime"""
         header = Header()
-        header.frame_id = "pupil_camera"
+        header.frame_id = "camera_optical_frame"
 
         # Convert datetime to ROS time
         unix_timestamp = timestamp.timestamp()
