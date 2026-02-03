@@ -53,7 +53,6 @@ import tf2_ros
 ### ! HIGH Priority ###
 # ! TODO: Make external plotter for data, specially for saccade visualisation
 # TODO: validate camera calibration is accurate
-# ! TODO: Make recalibration service, use offset?
 
 ### * low Priority ###
 # TODO: Load params
@@ -486,7 +485,6 @@ class PupilLabsROS2Node(Node):
 
         except Exception as e:
             self.get_logger().error(f"Error publishing front image: {e}")
-
 
     def _publish_imu_data(self, imu_datum):
         try:
