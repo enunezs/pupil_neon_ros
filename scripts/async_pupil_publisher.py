@@ -43,6 +43,11 @@ from pupil_labs.realtime_api.streaming import (  # noqa: E402
 
 import tf2_ros
 
+import csv
+import os
+from datetime import datetime
+
+
 ### ? PENDING: ###
 # DONE: Add other sensors
 # DONE: Add IMU: Good exercise
@@ -64,6 +69,21 @@ import tf2_ros
 class PupilLabsROS2Node(Node):
     def __init__(self):
         super().__init__("pupil_labs_node")
+
+        # --- Experiment Logging Setup ---
+        # Create the same session folder (or a pupil-specific one)
+        self.session_folder = os.path.join(os.getcwd(), 'user_recordings', f"session_{datetime.now().strftime('%Y%m%d_%H%M%S')}")
+        os.makedirs(self.session_folder, exist_ok=True)
+
+        self.pupil_csv = os.path.join(self.session_folder, "pupilometry.csv")
+        self.saccade_csv = os.path.join(self.session_folder, "saccade_events.csv")
+        # Initialize headers
+        with open(self.pupil_csv, 'w') as f:
+            csv.writer(f).writerow(["timestamp", "diameter_left", "diameter_right", "gaze_x", "gaze_y"])
+        with open(self.saccade_csv, 'w') as f:
+            csv.writer(f).writerow(["timestamp", "event_type", "amplitude_px", "duration_ms", "mean_velocity"])
+
+        # --------------------------------------
 
         # Initialize CV Bridge
         self.bridge = CvBridge()
@@ -332,29 +352,29 @@ class PupilLabsROS2Node(Node):
             if not self.running:
                 break
             try:
-                # store most recent data
-                # queue.put_nowait((datum.datetime, datum))
-
-                # TODO: publish most recent data here depending on sensor type
-                # self.get_logger().info(f"Received {sensor_type} datum: {datum}")
+                # --- VIDEO FRAMES ---
                 if sensor_type == "video":
-                    # TODO compress and send
-                    # Ensure proper numpy array creation
                     bgr_buffer = datum.to_ndarray(format="bgr24")
                     # Make sure it's a proper contiguous array
                     if not bgr_buffer.flags["C_CONTIGUOUS"]:
                         bgr_buffer = np.ascontiguousarray(bgr_buffer)
                     self._publish_front_image(bgr_buffer, datum.datetime)
 
+                # --- GAZE DATA ---
                 elif sensor_type == "gaze":
                     self._publish_gaze_data(datum)
-
+                    #  Log Pupilometry (diameter vs time)
+                    self._log_pupilometry(datum)
+                
+                # --- EYE EVENT LOGGING ---
                 elif (
                     isinstance(datum, FixationOnsetEventData)
                     or isinstance(datum, FixationEventData)
                     or isinstance(datum, BlinkEventData)
                 ):
                     self._publish_gaze_events_data(datum)
+                    # LOG SACCADES (distance/amplitude)
+                    self._log_eye_event(datum)
 
                 elif sensor_type == "imu":
                     self._publish_imu_data(datum)
@@ -400,7 +420,6 @@ class PupilLabsROS2Node(Node):
                             color=(0, 0, 255),
                             thickness=8,
                         )
-                        self.get_logger().debug("Circle drawn successfully")
 
                     except Exception as circle_error:
                         self.get_logger().error(
@@ -470,9 +489,9 @@ class PupilLabsROS2Node(Node):
             # Create a copy to ensure memory ownership
             bgr_image_copy = bgr_image.copy()
 
-            self.get_logger().debug(
-                f"Image shape: {bgr_image_copy.shape}, dtype: {bgr_image_copy.dtype}, contiguous: {bgr_image_copy.flags['C_CONTIGUOUS']}"
-            )
+            # self.get_logger().debug(
+            #     f"Image shape: {bgr_image_copy.shape}, dtype: {bgr_image_copy.dtype}, contiguous: {bgr_image_copy.flags['C_CONTIGUOUS']}"
+            # )
 
             # Convert to compressed ROS2 image
             compressed_msg = self.bridge.cv2_to_compressed_imgmsg(
@@ -481,7 +500,7 @@ class PupilLabsROS2Node(Node):
 
             compressed_msg.header = self._create_header(timestamp)
             self.front_image_pub.publish(compressed_msg)
-            self.get_logger().debug("Front image published successfully")
+            # self.get_logger().debug("Front image published successfully")
 
         except Exception as e:
             self.get_logger().error(f"Error publishing front image: {e}")
@@ -624,7 +643,7 @@ class PupilLabsROS2Node(Node):
             }
             if gaze_events_msg.event_type in early_publish_map:
                 early_publish_map[gaze_events_msg.event_type].publish(gaze_events_msg)
-                self.get_logger().debug(f"Published event: {gaze_events_msg}")
+                # self.get_logger().debug(f"Published event: {gaze_events_msg}")
                 return
 
             # Common end time for later events
@@ -635,7 +654,7 @@ class PupilLabsROS2Node(Node):
                 gaze_events_datum, BlinkEventData
             ):
                 self.blink_pub.publish(gaze_events_msg)
-                self.get_logger().debug(f"Published blink event: {gaze_events_msg}")
+                # self.get_logger().debug(f"Published blink event: {gaze_events_msg}")
                 return
 
             # Add gaze-related fields
@@ -657,7 +676,7 @@ class PupilLabsROS2Node(Node):
             }
             if gaze_events_msg.event_type in full_publish_map:
                 full_publish_map[gaze_events_msg.event_type].publish(gaze_events_msg)
-                self.get_logger().debug(f"Published event: {gaze_events_msg}")
+                # self.get_logger().debug(f"Published event: {gaze_events_msg}")
 
         except Exception as e:
             self.get_logger().error(f"Error publishing gaze events data: {e}")
@@ -709,6 +728,56 @@ class PupilLabsROS2Node(Node):
         super().destroy_node()
 
 
+    def _init_experiment_csvs(self):
+        """Initialize CSV files with headers."""
+        # Pupilometry Header
+        with open(self.pupil_log_file, 'w', newline='') as f:
+            writer = csv.writer(f)
+            writer.writerow([
+                "timestamp_unix", "left_diameter", "right_diameter", 
+                "gaze_x", "gaze_y", "worn"
+            ])
+        
+        # Saccade/Fixation Event Header
+        with open(self.event_log_file, 'w', newline='') as f:
+            writer = csv.writer(f)
+            writer.writerow([
+                "timestamp_unix", "event_type", "duration_ms", 
+                "amplitude_px", "amplitude_deg", 
+                "start_x", "start_y", "end_x", "end_y",
+                "mean_velocity", "max_velocity"
+            ])
+        self.get_logger().info(f"Logging experiment data to {self.session_id} CSVs")
+
+    def _log_pupilometry(self, datum):
+        """Writes high-frequency pupil diameter and gaze data."""
+        # LOG PUPILOMETRY (diameter vs time)
+        with open(self.pupil_csv, 'a') as f:
+            csv.writer(f).writerow([
+                datum.datetime.timestamp(), 
+                datum.pupil_diameter_left, 
+                datum.pupil_diameter_right,
+                datum.x, datum.y
+            ])
+
+    def _log_eye_event(self, datum):
+        """Writes event-based data (Saccades and Fixations)."""
+        # We only log completed events (type 0=Saccade, 1=Fixation) 
+        # as they contain the distance/amplitude metrics
+        # LOG SACCADES (distance/amplitude)
+        # 0 is saccade, 1 is fixation in Pupil Labs API
+        if datum.event_type in [0, 1]:
+            duration = (datum.end_time_ns - datum.start_time_ns) / 1e6
+            with open(self.saccade_csv, 'a') as f:
+                csv.writer(f).writerow([
+                    datum.datetime.timestamp(),
+                    "Saccade" if datum.event_type == 0 else "Fixation",
+                    datum.amplitude_pixels, 
+                    duration,
+                    datum.mean_velocity
+                ])
+        self._publish_gaze_events_data(datum)
+
 def main(args=None):
     rclpy.init(args=args)
 
@@ -721,7 +790,9 @@ def main(args=None):
         pass
     finally:
         node.destroy_node()
-        rclpy.shutdown()
+        if rclpy.ok():
+            rclpy.shutdown()
+
 
 
 if __name__ == "__main__":

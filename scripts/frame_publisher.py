@@ -170,7 +170,8 @@ def main(args=None):
     except KeyboardInterrupt:
         cv2.destroyAllWindows()
         glasses_frame_publisher.destroy_node()  # duh
-        rclpy.shutdown()  # Shutdown DDS !
+        if rclpy.ok():
+            rclpy.shutdown()
 
 
 if __name__ == '__main__':
