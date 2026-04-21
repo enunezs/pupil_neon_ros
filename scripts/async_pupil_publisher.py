@@ -93,7 +93,7 @@ class PupilLabsROS2Node(Node):
 
         # Publishers
         self.front_image_pub = self.create_publisher(
-            CompressedImage, "pupil_glasses/front_image", 10
+            CompressedImage, "pupil_glasses/front_image", 5
         )
         # self.overlay_image_pub = self.create_publisher(
         #     Image, "pupil_glasses/overlay_image", 2
