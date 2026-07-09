@@ -75,6 +75,7 @@ class PupilLabsROS2Node(Node):
         self.session_folder = os.path.join(os.getcwd(), 'user_recordings', f"session_{datetime.now().strftime('%Y%m%d_%H%M%S')}")
         os.makedirs(self.session_folder, exist_ok=True)
 
+        ## Pupilometry
         self.pupil_csv = os.path.join(self.session_folder, "pupilometry.csv")
         self.saccade_csv = os.path.join(self.session_folder, "saccade_events.csv")
         # Initialize headers
@@ -82,6 +83,15 @@ class PupilLabsROS2Node(Node):
             csv.writer(f).writerow(["timestamp", "diameter_left", "diameter_right", "gaze_x", "gaze_y"])
         with open(self.saccade_csv, 'w') as f:
             csv.writer(f).writerow(["timestamp", "event_type", "amplitude_px", "duration_ms", "mean_velocity"])
+
+        ## IMU
+        self.imu_csv = os.path.join(self.session_folder, "imu_data.csv")
+        with open(self.imu_csv, 'w') as f:
+            csv.writer(f).writerow([
+                "timestamp", 
+                "accel_x", "accel_y", "accel_z", "accel_rms",
+                "gyro_x", "gyro_y", "gyro_z", "gyro_rms"
+            ])  
 
         # --------------------------------------
 
@@ -153,6 +163,8 @@ class PupilLabsROS2Node(Node):
         # self.declare_parameter("camera_depth", 1.0)
         # self.declare_parameter("video_resolution", [1600, 1200])
         # self.declare_parameter("print_performance", False)
+        self.declare_parameter("image_scale", 1.0) # 50% scale = 800x600
+        self.image_scale = self.get_parameter("image_scale").value
 
         # self.ip = self.get_parameter("ip").value
         # self.port = self.get_parameter("port").value
@@ -309,32 +321,46 @@ class PupilLabsROS2Node(Node):
         # TODO:
         cam_info_msg = CameraInfo()
         calibration = await pupil_glasses.get_calibration()
-        # self.get_logger().info(f"Calibration: {calibration}")
+        self.get_logger().info(f"Calibration: {calibration}")
+        scale = self.image_scale
 
-        cam_info_msg.width = 1600
-        cam_info_msg.height = 1200
-        cam_info_msg.distortion_model = "plumb_bob"
+        cam_info_msg.width = int(1600 * scale)
+        cam_info_msg.height = int(1200 * scale)
 
-        # D - Distortion coefficients
-        cam_info_msg.d = calibration.scene_distortion_coefficients.astype(
-            float
-        ).tolist()
+        # cam_info_msg.distortion_model = "plumb_bob"
+        cam_info_msg.distortion_model = "fisheye" 
+
+        d_coeffs = calibration.scene_distortion_coefficients.astype(float).tolist()
+        # Force to 4 for fisheye compatibility
+        cam_info_msg.d = d_coeffs[:4] if len(d_coeffs) >= 4 else d_coeffs + [0.0]*(4-len(d_coeffs))
+
+        # # D - Distortion coefficients
+        # cam_info_msg.d = calibration.scene_distortion_coefficients.astype(
+        #     float
+        # ).tolist()
 
         # K - Camera intrinsic matrix
         K = calibration.scene_camera_matrix.astype(float)
-        cam_info_msg.k = K.flatten().tolist()
+        fx = K[0, 0] * scale
+        fy = K[1, 1] * scale
+        cx = K[0, 2] * scale
+        cy = K[1, 2] * scale
+
+        cam_info_msg.k = [fx, 0.0, cx, 0.0, fy, cy, 0.0, 0.0, 1.0]
+        # cam_info_msg.k = K.flatten().tolist()
 
         # R - Rectification matrix
+        cam_info_msg.r = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
         # cam_info_msg.r = [
         #     (calibration.scene_extrinsics_affine_matrix[0:2, 0:2]).flatten().tolist()
         # ]
-        cam_info_msg.r = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
-        fx = K[0, 0]
-        fy = K[1, 1]
-        cx = K[0, 2]
-        cy = K[1, 2]
 
+        # P - Projection matrix (Crucial for many ROS nodes)
+        # [fx'  0  cx' Tx]
+        # [ 0  fy' cy' Ty]
+        # [ 0   0   1   0]
         cam_info_msg.p = [fx, 0.0, cx, 0.0, 0.0, fy, cy, 0.0, 0.0, 0.0, 1.0, 0.0]
+
         cam_info_msg.binning_x = 0
         cam_info_msg.binning_y = 0
         cam_info_msg.roi.x_offset = 0
@@ -342,6 +368,7 @@ class PupilLabsROS2Node(Node):
         cam_info_msg.roi.height = 0
         cam_info_msg.roi.width = 0
         cam_info_msg.roi.do_rectify = False
+
         return cam_info_msg
 
     async def _enqueue_sensor_data(
@@ -479,19 +506,25 @@ class PupilLabsROS2Node(Node):
                 raise ValueError("bgr_image is None")
 
             # Ensure the array is contiguous and properly formatted for OpenCV
-            if not bgr_image.flags["C_CONTIGUOUS"]:
-                bgr_image = np.ascontiguousarray(bgr_image)
+            # if not bgr_image.flags["C_CONTIGUOUS"]:
+            #     bgr_image = np.ascontiguousarray(bgr_image)
 
-            # Ensure correct data type
-            if bgr_image.dtype != np.uint8:
-                bgr_image = bgr_image.astype(np.uint8)
+            # # Ensure correct data type
+            # if bgr_image.dtype != np.uint8:
+            #     bgr_image = bgr_image.astype(np.uint8)
 
             # Create a copy to ensure memory ownership
             bgr_image_copy = bgr_image.copy()
 
-            # self.get_logger().debug(
-            #     f"Image shape: {bgr_image_copy.shape}, dtype: {bgr_image_copy.dtype}, contiguous: {bgr_image_copy.flags['C_CONTIGUOUS']}"
-            # )
+            # SCALE THE IMAGE DOWN BEFORE PUBLISHING
+            if self.image_scale != 1.0:
+                bgr_image_copy = cv2.resize(
+                    bgr_image_copy, 
+                    (0, 0), 
+                    fx=self.image_scale, 
+                    fy=self.image_scale, 
+                    interpolation=cv2.INTER_AREA # INTER_LINEAR
+                )
 
             # Convert to compressed ROS2 image
             compressed_msg = self.bridge.cv2_to_compressed_imgmsg(
@@ -535,22 +568,25 @@ class PupilLabsROS2Node(Node):
         except Exception as e:
             self.get_logger().error(f"Error publishing imu: {e}")
 
-        pass
+        self._log_imu_data(imu_datum)
+
 
     def _publish_gaze_data(self, gaze_datum):
         """Publish gaze point to ROS topic"""
         try:
+            scale = self.image_scale # <--- ADD THIS
+
             # Create a PointStamped message
             self.gaze_point.header = self._create_header(gaze_datum.datetime)
-            self.gaze_point.point.x = float(gaze_datum.x)
-            self.gaze_point.point.y = float(gaze_datum.y)
+            self.gaze_point.point.x = float(gaze_datum.x) * scale 
+            self.gaze_point.point.y = float(gaze_datum.y) * scale 
             self.gaze_point.point.z = 0.0  # 2D gaze point
             self.gaze_position_pub.publish(self.gaze_point)
 
             # Create a GazeData message
             self.gaze_msg.header = self._create_header(gaze_datum.datetime)
-            self.gaze_msg.x = float(gaze_datum.x)
-            self.gaze_msg.y = float(gaze_datum.y)
+            self.gaze_msg.x = float(gaze_datum.x) * scale
+            self.gaze_msg.y = float(gaze_datum.y) * scale
             self.gaze_msg.worn = False
 
             self.gaze_msg.left_eye.pupil_diameter = float(
@@ -658,17 +694,19 @@ class PupilLabsROS2Node(Node):
                 return
 
             # Add gaze-related fields
-            gaze_events_msg.start_gaze_x = gaze_events_datum.start_gaze_x
-            gaze_events_msg.start_gaze_y = gaze_events_datum.start_gaze_y
-            gaze_events_msg.end_gaze_x = gaze_events_datum.end_gaze_x
-            gaze_events_msg.end_gaze_y = gaze_events_datum.end_gaze_y
-            gaze_events_msg.mean_gaze_x = gaze_events_datum.mean_gaze_x
-            gaze_events_msg.mean_gaze_y = gaze_events_datum.mean_gaze_y
-            gaze_events_msg.amplitude_pixels = gaze_events_datum.amplitude_pixels
-            gaze_events_msg.amplitude_angle_deg = gaze_events_datum.amplitude_angle_deg
-            gaze_events_msg.mean_velocity = gaze_events_datum.mean_velocity
-            gaze_events_msg.max_velocity = gaze_events_datum.max_velocity
+            scale = self.image_scale
 
+            gaze_events_msg.start_gaze_x = gaze_events_datum.start_gaze_x * scale
+            gaze_events_msg.start_gaze_y = gaze_events_datum.start_gaze_y * scale
+            gaze_events_msg.end_gaze_x = gaze_events_datum.end_gaze_x * scale
+            gaze_events_msg.end_gaze_y = gaze_events_datum.end_gaze_y * scale
+            gaze_events_msg.mean_gaze_x = gaze_events_datum.mean_gaze_x * scale
+            gaze_events_msg.mean_gaze_y = gaze_events_datum.mean_gaze_y * scale
+            gaze_events_msg.amplitude_pixels = gaze_events_datum.amplitude_pixels * scale
+            gaze_events_msg.mean_velocity = gaze_events_datum.mean_velocity * scale
+            gaze_events_msg.max_velocity = gaze_events_datum.max_velocity * scale
+
+            gaze_events_msg.amplitude_angle_deg = gaze_events_datum.amplitude_angle_deg
             # Map for full gaze events
             full_publish_map = {
                 1: self.fixation_pub,  # Fixation
@@ -776,8 +814,19 @@ class PupilLabsROS2Node(Node):
                     duration,
                     datum.mean_velocity
                 ])
-        self._publish_gaze_events_data(datum)
 
+    def _log_imu_data(self, datum):
+        """Writes raw IMU data and RMS movement magnitude."""
+        ax, ay, az = datum.accel_data.x, datum.accel_data.y, datum.accel_data.z
+        gx, gy, gz = datum.gyro_data.x, datum.gyro_data.y, datum.gyro_data.z
+        accel_rms = (ax**2 + ay**2 + az**2) ** 0.5  # magnitude, same idea as RMS across axes
+        gyro_rms  = (gx**2 + gy**2 + gz**2) ** 0.5
+        with open(self.imu_csv, 'a') as f:
+            csv.writer(f).writerow([
+                datum.datetime.timestamp(),
+                ax, ay, az, accel_rms,
+                gx, gy, gz, gyro_rms
+            ])
 def main(args=None):
     rclpy.init(args=args)
 
