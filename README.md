@@ -9,7 +9,7 @@ This project publishes:
 
 ## Branches and node variants
 
-- `release` / `copilot/release-20-update-documentation` (this line): simple publisher flow (`pupil_publisher.py`) plus emulator.
+- `release` / `copilot/release-20-update-documentation` (this branch): simple publisher flow (`pupil_publisher.py`) plus emulator.
 - `humble` and `recording_button`: include the asynchronous publisher flow (`async_pupil_publisher.py`) and RViz helper.
 
 If you need async streaming specifically, use `humble` or `recording_button`.
@@ -49,7 +49,7 @@ ros2 launch pupil_neon_ros async_pupil.launch.py
 
 Runtime parameters are in:
 
-`/home/runner/work/pupil_neon_ros/pupil_neon_ros/config/params.yaml`
+`config/params.yaml`
 
 Common parameters:
 - `publish_freq`
