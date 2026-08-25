@@ -1,55 +1,68 @@
-# ros2_pupil_neon
+# pupil_neon_ros (release 2.0 docs)
 
-Simple Pupil Neon interfacing for ROS2.
+ROS 2 integration for Pupil Neon glasses.
 
-Provides and publishes messages with the [Pupil Neon Glasses](https://pupil-labs.com/products/neon) basic API elements: `pupil_glasses/front_camera/image_color` and `pupil_glasses/gaze_position`.
+This project publishes:
+- `pupil_glasses/front_camera/image_color` (`sensor_msgs/Image`)
+- `pupil_glasses/front_camera/camera_info` (`sensor_msgs/CameraInfo`)
+- `pupil_glasses/gaze_position` (`geometry_msgs/PointStamped`)
 
-The script has customizable variables to configure resolution, frequency and other variables, as well as using a webcam for emulation
+## Branches and node variants
 
-Using the Pupil Labs Realtime API [pupil-labs-realtime-api
-](https://pupil-labs-realtime-api.readthedocs.io/en/stable/api/index.html).
+- `release` / `copilot/release-20-update-documentation` (this line): simple publisher flow (`pupil_publisher.py`) plus emulator.
+- `humble` and `recording_button`: include the asynchronous publisher flow (`async_pupil_publisher.py`) and RViz helper.
 
-Pending: Explain that we have camera properties
+If you need async streaming specifically, use `humble` or `recording_button`.
 
-# Usage
+## Prerequisites
 
-To use, clone the repository to your workspace, connect on the same wifi network as the Pupil Glasses (or share connection on the phone and connect) and run:
+- ROS 2 Humble workspace
+- Pupil Labs Realtime API Python package
+- Glasses and ROS machine on the same network
 
-```
+## Build
+
+```bash
 colcon build
-source install/setup
+source install/setup.bash
+```
+
+## Run (simple node, this branch)
+
+```bash
 ros2 launch pupil_neon_pkg pupil.launch.py
 ```
 
-A node to emulate glasses behaviour using a webcame and mouse (useful for development!) can be instantiated with:
+## Run emulator (this branch)
 
-```
-colcon build
-source install/setup
-ros2 launch pupil_neon_pkg pupil_devel.launch.py
+```bash
+ros2 launch pupil_neon_pkg emulator_pupil.launch.py
 ```
 
-Alternatively, run the associated as a docker container with the provided Dockerfile
+## Run async node (humble / recording_button)
 
+```bash
+ros2 launch pupil_neon_ros async_pupil.launch.py
 ```
+
+## Configuration
+
+Runtime parameters are in:
+
+`/home/runner/work/pupil_neon_ros/pupil_neon_ros/config/params.yaml`
+
+Common parameters:
+- `publish_freq`
+- `video_resolution`
+- `ip`
+- `port`
+- `draw_circle`
+- `print_performance`
+
+## Docker (optional)
+
+```bash
 xhost +local:root
-
 docker image build -t ros2-glass-base .
-
-docker run -it --env="DISPLAY" --device=/dev/video0:/dev/video0 -e DISPLAY=$DISPLAY --env="QT_X11_NO_MITSHM=1" --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" --privileged --net=host -v /home/ema/Documents/ROS2_Workspaces/:/home/username/workspaces -v /dev/shm:/dev/shm ros2-glass-base
-
-export containerId=$(docker ps -l -q)
-
+docker run -it --env="DISPLAY" --device=/dev/video0:/dev/video0 -e DISPLAY=$DISPLAY --env="QT_X11_NO_MITSHM=1" --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" --privileged --net=host -v /dev/shm:/dev/shm ros2-glass-base
 ```
-
-Multiple parameters can be configured at: `config/params.yaml`
-
-<!--
-# Citation
-
-'''
-@inproceedings{Nunez:2022,
-Pennding
-}
-'''
--->
