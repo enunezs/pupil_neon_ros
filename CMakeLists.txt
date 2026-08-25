@@ -43,10 +43,10 @@ rosidl_generate_interfaces(${PROJECT_NAME}
 
 install(PROGRAMS
   scripts/async_pupil_publisher.py
+  scripts/pupil_publisher.py
   scripts/rviz_visualizer.py
   # scripts/emulator_publisher.py
   # scripts/frame_publisher.py
-  # scripts/pupil_publisher.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
