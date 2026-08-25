@@ -27,6 +27,8 @@ colcon build
 source install/setup.bash
 ```
 
+If you use another shell, source the matching setup file (for example `install/setup.zsh`).
+
 ## Run (simple node, this branch)
 
 ```bash
@@ -41,7 +43,10 @@ ros2 launch pupil_neon_pkg emulator_pupil.launch.py
 
 ## Run async node (humble / recording_button)
 
+After checking out `humble` or `recording_button`:
+
 ```bash
+source install/setup.bash
 ros2 launch pupil_neon_ros async_pupil.launch.py
 ```
 
