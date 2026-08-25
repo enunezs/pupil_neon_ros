@@ -14,13 +14,19 @@ package provides two publisher nodes:
 
 Both nodes use the
 [Pupil Labs Realtime API](https://pupil-labs-realtime-api.readthedocs.io/en/stable/) and require the computer and Neon Companion device to be on the same network.
-The asynchronous node discovers Neon automatically. 
+The asynchronous node discovers Neon automatically.
 The simple node uses the IP address and port in `config/params.yaml` (defaults: `10.0.0.2` and `8080`).
+
+For most new integrations, start with the **asynchronous publisher**. Use the
+simple publisher when you specifically want the smallest possible
+scene-image-and-gaze bridge or an easier reference implementation.
 
 ## Supported environment
 
-This branch targets Ubuntu 22.04 and ROS 2 Humble. A working ROS 2 installation
-and configured `rosdep` are assumed below.
+Use the default **`release_v2`** branch for Ubuntu 22.04 and ROS 2 Humble.
+Despite its name, this is the current Humble-compatible branch and includes
+fixes that are not present on the older `humble` branch. A working ROS 2
+installation and configured `rosdep` are assumed below.
 
 ## Dependencies
 
@@ -52,17 +58,30 @@ source /opt/ros/humble/setup.bash
 
 ## Build
 
-Clone this repository into the workspace's `src` directory, then build and
-source the overlay:
+Clone the current Humble-compatible branch into the workspace's `src`
+directory, install declared ROS dependencies, then build and source the
+overlay:
 
 ```bash
+source /opt/ros/humble/setup.bash
+
+mkdir -p ~/ros2_ws/src
+cd ~/ros2_ws/src
+git clone --branch release_v2 --single-branch \
+  https://github.com/enunezs/pupil_neon_ros.git
+
 cd ~/ros2_ws
+rosdep install --from-paths src --ignore-src -r -y
 colcon build --symlink-install --packages-select pupil_neon_ros
 source install/setup.bash
 ```
 
-Repeat the last command in every new terminal, after sourcing
-`/opt/ros/humble/setup.bash`.
+In every new terminal, source both ROS 2 and the workspace overlay:
+
+```bash
+source /opt/ros/humble/setup.bash
+source ~/ros2_ws/install/setup.bash
+```
 
 ## Connect the glasses
 
@@ -99,7 +118,9 @@ ros2 run pupil_neon_ros pupil_publisher.py --ros-args \
 
 Simple-node parameters are defined under `/pupil_glasses_node` in
 `config/params.yaml`: `ip`, `port`, `publish_freq`, `video_resolution`,
-`camera_depth`, `draw_circle`, and `print_performance`. 
+`camera_depth`, `draw_circle`, and `print_performance`. The
+`draw_circle` parameter is retained for compatibility, but the current simple
+publisher does not draw a gaze overlay on the published image.
 
 ## Asynchronous publisher
 
